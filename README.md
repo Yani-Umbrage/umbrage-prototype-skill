@@ -12,6 +12,11 @@ Invoke with `/umbrage-prototype` or just describe what you want to build. Covers
 - Deploying to Vercel
 - Figma ↔ code sync setup
 
+### Command — `/new-prototype`
+Clones `nestjs-react-starter`, wires up client branding from a single primary color (via
+`clientTheme`), scaffolds the standard auth/data/layout stubs, and optionally creates and pushes a
+new GitHub repo. Use this to start a new engagement instead of cloning by hand.
+
 ### Command — `/sync-tokens`
 Syncs Figma Variables to `tailwind.config.js` immediately, without waiting for the nightly GitHub Action. Use whenever a designer updates brand colors in Figma and you need them in code now.
 
@@ -25,8 +30,13 @@ Publishes Code Connect mappings so Figma Dev Mode shows real React snippets for 
 ## Setup
 
 1. Install this plugin in Cowork (double-click the `.plugin` file)
-2. Add your Figma Personal Access Token to your repo's GitHub Secrets as `FIGMA_ACCESS_TOKEN`
-3. That's it — both GitHub Actions (nightly token sync + Code Connect on push) will work automatically
+2. For prototypes, you're done — `/new-prototype` and the skill's `clientTheme` path don't need
+   any Figma automation set up.
+3. If you also want Figma Code Connect and nightly token sync, add your Figma Personal Access
+   Token to your repo's GitHub Secrets as `FIGMA_ACCESS_TOKEN` and follow the One-Time Setup in
+   `skills/umbrage-prototype/references/figma-sync.md` — these aren't built into
+   `nestjs-react-starter` yet, so the first engagement that wants them needs to set them up per
+   that file's spec.
 
 ## Figma file
 
