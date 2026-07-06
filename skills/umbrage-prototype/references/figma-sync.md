@@ -2,6 +2,13 @@
 
 Two-way sync between the Umbrage Figma design system and the code.
 
+> **Status:** this describes the target setup and its schema, not something that ships pre-built.
+> As of writing, `nestjs-react-starter` has no `.figma.tsx` mapping files under `libs/ui-components`
+> and no `libs/util/tailwind-preset/sync-tokens.mjs`. The first engagement that needs either sync
+> has to build it using the spec below. Until then, use `clientTheme` for prototype branding
+> (see `prototype-guide.md` Step 10 / `SKILL.md`) — it doesn't depend on this infrastructure or a
+> paid Figma plan.
+
 ## What's Included
 
 | Sync          | Direction                  | Trigger                            |
@@ -27,7 +34,18 @@ Two-way sync between the Umbrage Figma design system and the code.
 3. Name: `FIGMA_ACCESS_TOKEN`
 4. Value: paste your Figma token
 
-That's it — both GitHub Actions will now work automatically.
+### 3. Set your client's Figma file key
+
+Every engagement works from a **duplicated** client Figma file, never the shared V2.2 kit. Find
+your client file's key in its URL (`figma.com/design/<FILE_KEY>/...`) and store it as a GitHub repo
+variable (Settings → Secrets and variables → Actions → Variables tab):
+
+- Name: `FIGMA_FILE_KEY`
+- Value: your client's duplicated file's key (NOT `KjT0pvJZg3HrTM2SGxlZxy` — that's the shared kit,
+  for reference only)
+
+Once both the secret and this variable are set, and the workflows/scripts below have been
+implemented in this repo (see the Status note above), both Actions will work automatically.
 
 ---
 
@@ -58,7 +76,9 @@ Most mapping files have `REPLACE_NODE_ID` as a placeholder. Run this once to aut
 
 ```bash
 cd libs/ui-components
-FIGMA_ACCESS_TOKEN=your_token npx @figma/code-connect create https://www.figma.com/design/KjT0pvJZg3HrTM2SGxlZxy/TEST-Design-System-Starter-V2.2 --skip-update
+
+# Use YOUR CLIENT'S DUPLICATED file, not the shared V2.2 kit.
+FIGMA_ACCESS_TOKEN=your_token npx @figma/code-connect create https://www.figma.com/design/$FIGMA_FILE_KEY --skip-update
 ```
 
 This prints the node IDs for each component. Copy them into the corresponding `.figma.tsx` files.
@@ -100,8 +120,11 @@ Reads color Variables from the Figma file and updates the color tokens in `libs/
 
 ```bash
 cd libs/util/tailwind-preset
-FIGMA_ACCESS_TOKEN=your_token node sync-tokens.mjs
+FIGMA_ACCESS_TOKEN=your_token FIGMA_FILE_KEY=your_client_file_key node sync-tokens.mjs
 ```
+
+`sync-tokens.mjs` does not exist in the stock starter kit yet — see the Status note at the top of
+this file. This is the command it should support once built.
 
 ### Token naming convention
 
