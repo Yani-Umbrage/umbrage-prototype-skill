@@ -1,6 +1,6 @@
 # Umbrage Prototype Guide
 
-### From Figma Starter Kit → Working App → GitHub + Vercel
+### From Figma Starter Kit → Working App → Umbrage Pages
 
 A step-by-step guide for building a clickable, deployed prototype using the Umbrage design system and React starter kit. No backend required in prototype mode (see Scope modes in `SKILL.md`).
 
@@ -14,7 +14,7 @@ A multi-screen React prototype with:
 - Umbrage design system components (Badge, Button, Sidebar, etc.)
 - Mock data that looks realistic
 - Role-based views (e.g. customer vs. admin)
-- Live URL on Vercel you can share with anyone
+- A shareable Umbrage Pages link (SSO-gated to Umbrage staff) you can send to the team
 
 **Time estimate:** 1–2 days for a 10–12 screen prototype.
 
@@ -24,13 +24,13 @@ A multi-screen React prototype with:
 
 - Node.js 20+ and Yarn installed
 - Git installed
-- A Vercel account (free tier works)
+- The Umbrage Pages connector connected in Claude (for publishing; see Step 12) - no Vercel account needed
 - Access to the [Umbrage Figma design system](https://www.figma.com/design/KjT0pvJZg3HrTM2SGxlZxy/TEST-Design-System-Starter-V2.2)
 - GitHub account with access to the Umbrage-Studios org (or your personal account)
 
 ---
 
-## Step 1 — Get Familiar with the Figma Starter Kit
+## Step 1 - Get Familiar with the Figma Starter Kit
 
 **File:** [TEST Design System Starter V2.2](https://www.figma.com/design/KjT0pvJZg3HrTM2SGxlZxy/TEST-Design-System-Starter-V2.2)
 
@@ -40,9 +40,9 @@ This Figma file is the visual source of truth for every component in the code. B
 
 Open the file and look at the left sidebar pages:
 
-- **CORE COMPONENTS** — every UI component (Badge, Button, Input, Select, Sidebar, etc.) with all their variants
-- **EXAMPLE** — sample layouts showing how components combine into screens
-- **Read Me** — usage notes from the design team
+- **CORE COMPONENTS** - every UI component (Badge, Button, Input, Select, Sidebar, etc.) with all their variants
+- **EXAMPLE** - sample layouts showing how components combine into screens
+- **Read Me** - usage notes from the design team
 
 ### How to use it while building
 
@@ -71,13 +71,13 @@ Open the file and look at the left sidebar pages:
 
 ### Figma ↔ Code sync is opt-in infrastructure
 
-The repo supports two sync mechanisms (see [`figma-sync.md`](figma-sync.md)), but neither is set up by default — they're a one-time setup an engagement does when it needs them, not something that ships pre-configured:
+The repo supports two sync mechanisms (see [`figma-sync.md`](figma-sync.md)), but neither is set up by default - they're a one-time setup an engagement does when it needs them, not something that ships pre-configured:
 
-1. **Code Connect** — once set up, real React code snippets appear in Figma Dev Mode when you click any component. Requires filling in `.figma.tsx` node IDs and running the initial publish (see `figma-sync.md`).
+1. **Code Connect** - once set up, real React code snippets appear in Figma Dev Mode when you click any component. Requires filling in `.figma.tsx` node IDs and running the initial publish (see `figma-sync.md`).
 
-2. **Design Token Sync** — once set up, a nightly GitHub Action reads Figma Variables and regenerates the color tokens in `libs/util/tailwind-preset/tailwind.config.js`. Requires a paid Figma plan (Variables REST API) and a `sync-tokens.mjs` script that the engagement builds per `figma-sync.md`'s spec.
+2. **Design Token Sync** - once set up, a nightly GitHub Action reads Figma Variables and regenerates the color tokens in `libs/util/tailwind-preset/tailwind.config.js`. Requires a paid Figma plan (Variables REST API) and a `sync-tokens.mjs` script that the engagement builds per `figma-sync.md`'s spec.
 
-**For prototypes, don't wait on either sync.** Use `clientTheme` (Step 10) — it's the fast, working-today path for getting a client's brand color into the code, whether or not this engagement ever sets up full Figma sync. If `/new-prototype` was used to scaffold this project, `clientTheme` is already wired up.
+**For prototypes, don't wait on either sync.** Use `clientTheme` (Step 10) - it's the fast, working-today path for getting a client's brand color into the code, whether or not this engagement ever sets up full Figma sync. If `/new-prototype` was used to scaffold this project, `clientTheme` is already wired up.
 
 ### Finding color and spacing values
 
@@ -93,9 +93,9 @@ All color tokens are in the Figma file under the **Variables** panel (right side
 
 ---
 
-## Step 2 — Clone the Starter Kit
+## Step 2 - Clone the Starter Kit
 
-The starter kit lives at `github.com/Umbrage-Studios/nestjs-react-starter`. **Do not push changes back to this repo** — it's the shared source of truth for all Umbrage projects.
+The starter kit lives at `github.com/Umbrage-Studios/nestjs-react-starter`. **Do not push changes back to this repo** - it's the shared source of truth for all Umbrage projects.
 
 ```bash
 # Clone to a new folder with your project name
@@ -111,7 +111,7 @@ yarn install
 
 ---
 
-## Step 3 — Create Your GitHub Repo
+## Step 3 - Create Your GitHub Repo
 
 Create a new private repo for your project (use your personal account if you don't have org-level create permissions):
 
@@ -124,7 +124,7 @@ git remote add origin https://github.com/your-username/your-project-name.git
 
 ---
 
-## Step 4 — Understand the Project Structure
+## Step 4 - Understand the Project Structure
 
 ```
 your-project-name/
@@ -143,7 +143,7 @@ your-project-name/
             └── ...               ← all available components
 ```
 
-The key rule: **you only edit files inside `apps/frontend-react/src/app/`.** Everything in `libs/` is the design system — don't modify it.
+The key rule: **you only edit files inside `apps/frontend-react/src/app/`.** Everything in `libs/` is the design system - don't modify it.
 
 To see all available components, run Storybook:
 
@@ -154,14 +154,14 @@ yarn nx storybook ui-components
 
 ---
 
-## Step 5 — Start the Dev Server
+## Step 5 - Start the Dev Server
 
 ```bash
 yarn nx serve frontend-react
 # Opens at http://localhost:4200
 ```
 
-**If everything renders unstyled** (system font, no colors, no spacing) — a fresh clone of
+**If everything renders unstyled** (system font, no colors, no spacing) - a fresh clone of
 `nestjs-react-starter` does not import `styles.css` anywhere in the `apps/frontend-react` entry
 chain, so Tailwind never loads until you add it yourself. Add this to `src/main.tsx`:
 
@@ -169,12 +169,12 @@ chain, so Tailwind never loads until you add it yourself. Add this to `src/main.
 import './styles.css';
 ```
 
-This is a gap in the starter kit itself, not something specific to your prototype — worth flagging
+This is a gap in the starter kit itself, not something specific to your prototype - worth flagging
 to whoever maintains `nestjs-react-starter` so new clones don't hit it.
 
 ---
 
-## Step 6 — Plan Your Screens
+## Step 6 - Plan Your Screens
 
 Before writing code, list every screen your prototype needs. For each screen write down:
 
@@ -187,7 +187,7 @@ This list becomes your file structure and your mock data schema.
 
 ---
 
-## Step 7 — Set Up Auth (Copy This Pattern)
+## Step 7 - Set Up Auth (Copy This Pattern)
 
 For prototypes, a simple hardcoded auth context is enough. Create `src/app/auth/AuthContext.tsx`:
 
@@ -259,12 +259,12 @@ Wrap your app in `<AuthProvider>` inside `src/main.tsx`.
 
 ---
 
-## Step 8 — Define Your Data Types and Mock Data
+## Step 8 - Define Your Data Types and Mock Data
 
 Create `src/app/data/types.ts` with interfaces for everything your prototype shows:
 
 ```ts
-// Example — adapt to your project
+// Example - adapt to your project
 export interface Property {
   id: string;
   name: string;
@@ -281,7 +281,7 @@ import { Property } from './types';
 export const PROPERTIES: Property[] = [
   { id: 'p1', name: '350 Fifth Ave', address: '350 Fifth Ave, NY 10118', status: 'active' },
   { id: 'p2', name: '1 World Trade', address: '1 World Trade Center, NY 10007', status: 'active' },
-  // add enough rows to look real — aim for 5–10 items per list
+  // add enough rows to look real - aim for 5–10 items per list
 ];
 ```
 
@@ -296,7 +296,7 @@ export const getPropertyById = (id: string) => PROPERTIES.find(p => p.id === id)
 
 ---
 
-## Step 9 — Set Up Layouts and Routing
+## Step 9 - Set Up Layouts and Routing
 
 Create shell layouts for each role using the `Sidebar` component.
 
@@ -393,7 +393,7 @@ function ProtectedRoute({
 
 ---
 
-## Step 10 — Build Each Screen
+## Step 10 - Build Each Screen
 
 Use Storybook (`http://localhost:4400`) as your component reference while building. Key patterns:
 
@@ -420,11 +420,11 @@ import {
 
 **Common gotchas:**
 
-- `BadgeColor` has: `Information`, `Success`, `Warning`, `Alert`, `Neutral` — there is **no** `Error`
+- `BadgeColor` has: `Information`, `Success`, `Warning`, `Alert`, `Neutral` - there is **no** `Error`
 - `Select` requires a `placeholder` prop
 - `Sidebar` requires a `profilePicture` prop (pass `""` if unused)
 - `Breadcrumb` duplicates the last item unless you set `breadcrumbSize={BreadcrumbSize.Two}` for 2-item breadcrumbs
-- TypeScript's `exactOptionalPropertyTypes` is enabled — don't pass `undefined` to optional props; omit them or use conditional spread: `{...(condition ? { prop: value } : {})}`
+- TypeScript's `exactOptionalPropertyTypes` is enabled - don't pass `undefined` to optional props; omit them or use conditional spread: `{...(condition ? { prop: value } : {})}`
 
 **A minimal screen:**
 
@@ -444,7 +444,7 @@ export default function DashboardPage() {
 }
 ```
 
-`--client-primary-dark` is a CSS variable set by `clientTheme` (see below) — never hardcode a brand hex directly in a component.
+`--client-primary-dark` is a CSS variable set by `clientTheme` (see below) - never hardcode a brand hex directly in a component.
 
 **Typography classes** (from the design system):
 | Class | Use |
@@ -456,22 +456,22 @@ export default function DashboardPage() {
 | `typography-font-body-xs` | Small/secondary text |
 | `typography-font-label-sm` | Labels, tags |
 
-**Color tokens** — use your client's tokens, never these literals. The neutrals below are design-system defaults and are safe to reuse; the brand colors MUST come from `clientTheme` (`apps/frontend-react/src/app/theme/clientTheme.ts`, see `SKILL.md`), not hardcoded hex:
+**Color tokens** - use your client's tokens, never these literals. The neutrals below are design-system defaults and are safe to reuse; the brand colors MUST come from `clientTheme` (`apps/frontend-react/src/app/theme/clientTheme.ts`, see `SKILL.md`), not hardcoded hex:
 
 | Token | Source |
 |---|---|
-| Primary brand | `clientTheme.primary` / `var(--client-primary)` — client-specific, do NOT hardcode |
-| Dark / accent | `clientTheme.primaryDark` / `var(--client-primary-dark)` — client-specific |
-| Body text | `#25272C` — design-system default |
-| Secondary text | `#6B7280` — design-system default |
-| Background | `#F5F7FA` — design-system default |
-| Border | `#EDEEF1` — design-system default |
+| Primary brand | `clientTheme.primary` / `var(--client-primary)` - client-specific, do NOT hardcode |
+| Dark / accent | `clientTheme.primaryDark` / `var(--client-primary-dark)` - client-specific |
+| Body text | `#25272C` - design-system default |
+| Secondary text | `#6B7280` - design-system default |
+| Background | `#F5F7FA` - design-system default |
+| Border | `#EDEEF1` - design-system default |
 
 > Example only (ConEd BEUP 3.0): primary `#069BD7`, dark navy `#003B5C`. Do not reuse these for other clients.
 
 ---
 
-## Step 11 — Build a Login Page with Quick-Fill Buttons
+## Step 11 - Build a Login Page with Quick-Fill Buttons
 
 Always include quick-fill demo buttons so reviewers don't need to remember passwords:
 
@@ -493,37 +493,37 @@ const quickFill = (email: string) => {
 
 ---
 
-## Step 12 — Deploy to Vercel
+## Step 12 - Publish to Umbrage Pages
 
-Create `vercel.json` at the project root:
+Prototypes publish to **Umbrage Pages**, not a third-party host. The fastest path is the
+`/publish-preview` command: it builds the static bundle and hands back an SSO-gated link
+(`https://preview.pages.umbrage.com/p/<hash>/`) that any signed-in Umbrage user can open. No Vercel
+account, no manual upload.
 
-```json
-{
-  "buildCommand": "cd apps/frontend-react && node ../../node_modules/.bin/vite build",
-  "outputDirectory": "dist/apps/frontend-react",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
-}
+```
+/publish-preview
 ```
 
-The `rewrites` rule is required for SPA routing — without it, direct links to `/app/dashboard` return 404.
+It asks for a project name (used as the preview's title), builds, and returns the link.
 
-Deploy:
+**What makes a build publishable.** The Umbrage Pages publisher accepts UTF-8 text files only, serves
+at a sub-path, and does no SPA rewrites. So the build must be:
 
-```bash
-# Install Vercel CLI if you haven't
-npm i -g vercel
+- **Relative base** - `base: './'` in the Vite config, so asset URLs resolve at the sub-path.
+- **HashRouter, not BrowserRouter** - client-side routing via `#/path`, so refreshes and deep links
+  work without server rewrites. (Projects scaffolded by `/new-prototype` already use HashRouter.)
+- **Text-only, no binary assets** - no `.ttf`/`.woff`/`.png`/`.jpg` in the output. The design
+  system's Cera Pro fonts are binary, so they must be inlined as base64 (e.g. `vite-plugin-singlefile`
+  or a high `build.assetsInlineLimit`), or dropped in favor of a system-font fallback. `SVG` images
+  are fine as-is.
 
-# From the project root
-vercel --prod
-```
-
-If Vercel tries to link to a GitHub repo you don't have permission to connect, disconnect the Git integration from the Vercel dashboard (Project Settings → Git → Disconnect) and re-run `vercel --prod` to deploy directly.
-
-Your prototype will be live at `https://your-project-name.vercel.app`.
+`/publish-preview` handles these for you (poc-template is already compliant; nestjs-react-starter
+gets the static-safe build applied). See `commands/publish-preview.md` for the full mechanics and the
+not-yet-available path for true per-project placement on `pages.umbrage.com`.
 
 ---
 
-## Step 13 — Push to GitHub
+## Step 13 - Push to GitHub
 
 The pre-push hook runs lint, type-check, and tests. Fix any errors it reports before pushing. Common issues:
 
@@ -589,7 +589,7 @@ yarn nx run-many -t test,lint,build --exclude=backend-go
   onSelect={s => !Array.isArray(s) && setSelected(s)}
 />
 
-// Breadcrumb (2 items — use BreadcrumbSize.Two to avoid duplicates)
+// Breadcrumb (2 items - use BreadcrumbSize.Two to avoid duplicates)
 <Breadcrumb
   breadcrumbSize={BreadcrumbSize.Two}
   onClick={url => navigate(url)}
@@ -635,7 +635,7 @@ apps/frontend-react/src/app/
 
 ---
 
-## Example implementation (one client) — do not reuse its colors
+## Example implementation (one client) - do not reuse its colors
 
 The ConEd BEUP 3.0 prototype built with this guide is at:
 

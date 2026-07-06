@@ -17,9 +17,10 @@ one color instead of walking through `references/prototype-guide.md` Steps 1-9 b
 
 Clones `nestjs-react-starter`, generates `clientTheme.ts` from a single primary brand hex (deriving
 the dark shade automatically), optionally wires up a client tagline and a non-default font family,
-scaffolds the standard auth/data-layer stubs, verifies the project boots, and — only if asked —
-creates and pushes a new GitHub repo. This is the fast-start path; for a from-scratch walkthrough of
-the same steps, see `references/prototype-guide.md`.
+scaffolds the standard auth/data-layer stubs, sets the project up publish-ready (HashRouter +
+relative base so it can go straight to Umbrage Pages), verifies the project boots, and - only if
+asked - creates and pushes a new GitHub repo. This is the fast-start path; for a from-scratch
+walkthrough of the same steps, see `references/prototype-guide.md`.
 
 ## Inputs to collect first
 
@@ -27,21 +28,21 @@ the same steps, see `references/prototype-guide.md`.
 2. Primary brand color as a hex, e.g. `#F40009` (required)
 3. Optional: an explicit dark/accent hex override (otherwise derived automatically)
 4. Optional: logo file (SVG preferred)
-5. Optional: tagline / display subtitle (e.g. "Prototype", or a short client description) — shown
+5. Optional: tagline / display subtitle (e.g. "Prototype", or a short client description) - shown
    alongside the client name in the Sidebar header and login page if the user wants it there
-6. Optional: font family override (e.g. "Poppins", "Inter") — if given, ask whether it's a Google
+6. Optional: font family override (e.g. "Poppins", "Inter") - if given, ask whether it's a Google
    Font (most common for prototypes) or a self-hosted font the user has files for. If omitted, keep
-   the design system's default typeface (Cera Pro) — don't ask for this unless the user cares about
+   the design system's default typeface (Cera Pro) - don't ask for this unless the user cares about
    matching a specific brand font
 7. Optional: GitHub destination (org or user, plus visibility) if a repo should be created now
 
-If the user doesn't have a duplicated client Figma file yet, that's fine — it isn't required to
+If the user doesn't have a duplicated client Figma file yet, that's fine - it isn't required to
 start. Don't block on it.
 
 ## Steps
 
-1. Print a short summary of what's about to happen — target folder name, and whether a GitHub repo
-   will be created — and confirm before touching anything. Cloning a repo and creating a new GitHub
+1. Print a short summary of what's about to happen - target folder name, and whether a GitHub repo
+   will be created - and confirm before touching anything. Cloning a repo and creating a new GitHub
    repo aren't easily reversible.
 
 2. Clone the starter kit into a new folder and detach it from the shared repo:
@@ -92,14 +93,24 @@ export function applyClientTheme() {
 
 If no dark/accent override was given, compute `PRIMARY_DARK` with the `darken()` function above
 (the same derivation the POC Studio's `brandTheme.ts` uses) instead of asking the user for a second
-color — one input is the point. `tagline` and `fontFamily` just get their defaults if not given.
+color - one input is the point. `tagline` and `fontFamily` just get their defaults if not given.
 
 4. In `apps/frontend-react/src/main.tsx`: add `import './styles.css';` if it isn't already imported
-   anywhere in the entry chain — verified against a fresh clone that this import is missing by
+   anywhere in the entry chain - verified against a fresh clone that this import is missing by
    default, so without it Tailwind never loads and every component renders unstyled (system font,
    no colors). Then call `applyClientTheme()` once at app root, before the app renders.
 
-5. **Only if a font family override was given** — do not touch `libs/util/tailwind-preset/` for
+   **Make it publish-ready from the start** so it can go straight to Umbrage Pages later (see
+   `/publish-preview`) with no rework:
+   - Use `HashRouter` (not `BrowserRouter`) for the app's router. Umbrage Pages serves at a sub-path
+     with no SPA rewrites, so `BrowserRouter` breaks on refresh and deep links. A stock clone uses
+     `BrowserRouter` in `apps/frontend-react/src/main.tsx` / `src/app/app.tsx` - switch it.
+   - Set `base: './'` in `apps/frontend-react/vite.config.ts` so built asset URLs are relative and
+     resolve at any sub-path.
+   This matches how `poc-template` is already set up, and means the publish step is later a pure
+   build-and-upload with no source changes.
+
+5. **Only if a font family override was given** - do not touch `libs/util/tailwind-preset/` for
    this, it's the shared design system used by every engagement. Every `typography-font-*` class
    (`font-title-xl`, `font-body-sm`, etc.) hardcodes `font-family: cera pro` at the preset level, so
    the override has to happen in `apps/frontend-react/tailwind.config.js`, which each cloned project
@@ -152,7 +163,7 @@ color — one input is the point. `tagline` and `fontFamily` just get their defa
         plugins: [require('@tailwindcss/typography')],
       };
       ```
-      `TYPOGRAPHY_KEYS` is the full list from the current preset — if the design system has added
+      `TYPOGRAPHY_KEYS` is the full list from the current preset - if the design system has added
       more typography classes since this was written, diff against
       `libs/util/tailwind-preset/tailwind.config.js`'s `typography` block and add any missing keys.
 
@@ -162,7 +173,7 @@ color — one input is the point. `tagline` and `fontFamily` just get their defa
 7. If a logo was provided, copy it into `apps/frontend-react/src/assets/` and wire it into the
    `Sidebar` `logo` prop as shown in `references/prototype-guide.md` Step 9. If a tagline was given,
    mention to the user it's available as `clientTheme.tagline` for the login page or Sidebar header
-   — don't force it into a specific component, since that depends on the screens they build.
+   - don't force it into a specific component, since that depends on the screens they build.
 
 8. Install dependencies and verify the project boots before handing it off:
 
@@ -172,7 +183,7 @@ yarn nx serve frontend-react
 ```
 
 Confirm the dev server starts cleanly (watch for the local URL in the output). If a font override
-was set, also open the app and confirm a heading actually renders in the new font — a Tailwind
+was set, also open the app and confirm a heading actually renders in the new font - a Tailwind
 config change sometimes needs the dev server restarted, not just hot-reloaded, to take effect. Then
 stop the server. This catches broken theme wiring immediately instead of leaving it for whoever
 builds the first screen.
@@ -185,22 +196,26 @@ git remote add origin https://github.com/<org-or-user>/<name>.git
 git push -u origin main
 ```
 
-10. Report a checklist of what's still manual and why it's not automated here:
-   - Duplicate the V2.2 Figma kit for this client — needed for Dev Mode / Code Connect / eventual
+10. Offer to publish it to Umbrage Pages right away with `/publish-preview` - it builds the static
+    bundle and hands back an SSO-gated shareable link, no third-party host. This is the fast way to
+    get the prototype in front of the team.
+
+11. Report a checklist of what's still manual and why it's not automated here:
+   - Duplicate the V2.2 Figma kit for this client - needed for Dev Mode / Code Connect / eventual
      token sync, not for the prototype itself
-   - Decide now vs. later on setting up full Figma Variable sync (`references/figma-sync.md`) —
+   - Decide now vs. later on setting up full Figma Variable sync (`references/figma-sync.md`) -
      optional upgrade, not required to ship
    - Add `FIGMA_ACCESS_TOKEN` / `FIGMA_FILE_KEY` if/when that sync gets set up
-   - Deploy to Vercel per `references/prototype-guide.md` Step 12
+   - Publish to Umbrage Pages with `/publish-preview` when you want to share it
 
 ## If it fails
 
-- **`git clone` permission denied** — confirm GitHub access to `Umbrage-Studios/nestjs-react-starter`.
-- **`yarn nx serve` fails to boot** — check the `clientTheme.ts` hex values are valid 6-digit hex;
+- **`git clone` permission denied** - confirm GitHub access to `Umbrage-Studios/nestjs-react-starter`.
+- **`yarn nx serve` fails to boot** - check the `clientTheme.ts` hex values are valid 6-digit hex;
   a malformed hex breaks `darken()`'s parsing.
-- **`gh repo create` fails** — confirm `gh auth status` is logged in and the destination org/user
+- **`gh repo create` fails** - confirm `gh auth status` is logged in and the destination org/user
   allows repo creation from this account.
-- **Font override doesn't visually change anything** — confirm the edit went into
+- **Font override doesn't visually change anything** - confirm the edit went into
   `apps/frontend-react/tailwind.config.js`, not `libs/util/tailwind-preset/tailwind.config.js` (the
   shared preset always wins if both define the same key, and editing it affects every other
   engagement). Also confirm the Google Font `<link>` tag actually resolves (check the Network tab)
@@ -208,10 +223,10 @@ git push -u origin main
 
 ## Design notes
 
-- Asking for one primary color instead of six separate tokens is the main efficiency lever — it
+- Asking for one primary color instead of six separate tokens is the main efficiency lever - it
   reuses the derivation the POC Studio's `brandTheme.ts` already validated (one color in, a full
   usable palette out), rather than re-deriving palette math from scratch.
-- Font family is opt-in and asked for last, after color, because most prototypes never need it —
+- Font family is opt-in and asked for last, after color, because most prototypes never need it -
   don't add the tailwind.config.js override step unless the user actually wants a non-default
   typeface.
 - The interface is written so it doesn't need to change once Code Connect and token sync actually
