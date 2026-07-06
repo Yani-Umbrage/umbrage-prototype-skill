@@ -161,6 +161,17 @@ yarn nx serve frontend-react
 # Opens at http://localhost:4200
 ```
 
+**If everything renders unstyled** (system font, no colors, no spacing) — a fresh clone of
+`nestjs-react-starter` does not import `styles.css` anywhere in the `apps/frontend-react` entry
+chain, so Tailwind never loads until you add it yourself. Add this to `src/main.tsx`:
+
+```ts
+import './styles.css';
+```
+
+This is a gap in the starter kit itself, not something specific to your prototype — worth flagging
+to whoever maintains `nestjs-react-starter` so new clones don't hit it.
+
 ---
 
 ## Step 6 — Plan Your Screens

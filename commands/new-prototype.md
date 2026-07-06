@@ -94,8 +94,10 @@ If no dark/accent override was given, compute `PRIMARY_DARK` with the `darken()`
 (the same derivation the POC Studio's `brandTheme.ts` uses) instead of asking the user for a second
 color — one input is the point. `tagline` and `fontFamily` just get their defaults if not given.
 
-4. Call `applyClientTheme()` once at app root, in `apps/frontend-react/src/main.tsx`, before the app
-   renders.
+4. In `apps/frontend-react/src/main.tsx`: add `import './styles.css';` if it isn't already imported
+   anywhere in the entry chain — verified against a fresh clone that this import is missing by
+   default, so without it Tailwind never loads and every component renders unstyled (system font,
+   no colors). Then call `applyClientTheme()` once at app root, before the app renders.
 
 5. **Only if a font family override was given** — do not touch `libs/util/tailwind-preset/` for
    this, it's the shared design system used by every engagement. Every `typography-font-*` class
