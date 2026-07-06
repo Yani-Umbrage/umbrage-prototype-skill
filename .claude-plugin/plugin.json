@@ -1,0 +1,9 @@
+{
+  "name": "umbrage-prototype-kit",
+  "version": "0.1.0",
+  "description": "Hit the ground running on any engagement and go straight into building products. Includes the Umbrage prototype skill and Figma sync commands.",
+  "author": {
+    "name": "Umbrage Studios"
+  },
+  "keywords": ["umbrage", "design-system", "prototype", "figma", "react"]
+}
