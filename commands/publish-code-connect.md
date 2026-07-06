@@ -13,7 +13,7 @@ Publish Code Connect so Figma Dev Mode shows live React snippets for every compo
 
 ## What this does
 
-Reads the `.figma.tsx` mapping files alongside each component in `libs/ui-components/` and publishes them to the client's Figma file. After publishing, any developer who clicks a component in Figma Dev Mode sees the exact import and props to use — no more guessing.
+Reads the `.figma.tsx` mapping files alongside each component in `libs/ui-components/` and publishes them to the client's Figma file. After publishing, any developer who clicks a component in Figma Dev Mode sees the exact import and props to use - no more guessing.
 
 ## Steps
 
@@ -35,7 +35,7 @@ cd libs/ui-components
 FIGMA_ACCESS_TOKEN=<token> npx @figma/code-connect publish
 ```
 
-4. Confirm success — tell the user to open the Figma file, click any component, switch to Dev Mode (`</>` toggle), and verify they see the React snippet.
+4. Confirm success - tell the user to open the Figma file, click any component, switch to Dev Mode (`</>` toggle), and verify they see the React snippet.
 
 ## Adding a new component
 
@@ -43,10 +43,10 @@ When a new component is added to `libs/ui-components/src/lib/`:
 
 1. Create `ComponentName.figma.tsx` alongside the component source, using `badge.figma.tsx` as a reference for prop mapping structure.
 2. Run this command to publish it.
-3. From next push to `main`, the GitHub Action will publish automatically — no need to run this manually again.
+3. From next push to `main`, the GitHub Action will publish automatically - no need to run this manually again.
 
 ## If it fails
 
-- **"Unauthorized"** — the token doesn't have the right Figma scopes. Regenerate it with `File content (read)` and `Code Connect (write)` permissions.
-- **"Component not found"** — the node ID in the `.figma.tsx` file doesn't match the client's Figma file. Re-run the discovery step with the correct client Figma URL.
-- **GitHub Action not triggering** — confirm `FIGMA_ACCESS_TOKEN` is added as a repository secret (repo Settings → Secrets and variables → Actions).
+- **"Unauthorized"** - the token doesn't have the right Figma scopes. Regenerate it with `File content (read)` and `Code Connect (write)` permissions.
+- **"Component not found"** - the node ID in the `.figma.tsx` file doesn't match the client's Figma file. Re-run the discovery step with the correct client Figma URL.
+- **GitHub Action not triggering** - confirm `FIGMA_ACCESS_TOKEN` is added as a repository secret (repo Settings → Secrets and variables → Actions).

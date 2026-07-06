@@ -6,7 +6,7 @@ Two-way sync between the Umbrage Figma design system and the code.
 > As of writing, `nestjs-react-starter` has no `.figma.tsx` mapping files under `libs/ui-components`
 > and no `libs/util/tailwind-preset/sync-tokens.mjs`. The first engagement that needs either sync
 > has to build it using the spec below. Until then, use `clientTheme` for prototype branding
-> (see `prototype-guide.md` Step 10 / `SKILL.md`) — it doesn't depend on this infrastructure or a
+> (see `prototype-guide.md` Step 10 / `SKILL.md`) - it doesn't depend on this infrastructure or a
 > paid Figma plan.
 
 ## What's Included
@@ -41,7 +41,7 @@ your client file's key in its URL (`figma.com/design/<FILE_KEY>/...`) and store 
 variable (Settings → Secrets and variables → Actions → Variables tab):
 
 - Name: `FIGMA_FILE_KEY`
-- Value: your client's duplicated file's key (NOT `KjT0pvJZg3HrTM2SGxlZxy` — that's the shared kit,
+- Value: your client's duplicated file's key (NOT `KjT0pvJZg3HrTM2SGxlZxy` - that's the shared kit,
   for reference only)
 
 Once both the secret and this variable are set, and the workflows/scripts below have been
@@ -96,7 +96,7 @@ After this, open the Figma file → click any component → Dev Mode → you'll 
 
 1. Create `ComponentName.figma.tsx` alongside the component source
 2. Write the prop mappings (use `badge.figma.tsx` as a reference)
-3. Push to main — the GitHub Action publishes it automatically
+3. Push to main - the GitHub Action publishes it automatically
 
 ---
 
@@ -106,7 +106,7 @@ After this, open the Figma file → click any component → Dev Mode → you'll 
 
 Reads color Variables from the Figma file and updates the color tokens in `libs/util/tailwind-preset/tailwind.config.js`.
 
-**Requires a paid Figma plan** — the Variables REST API is only available on Professional plans and above.
+**Requires a paid Figma plan** - the Variables REST API is only available on Professional plans and above.
 
 ### How it works
 
@@ -123,7 +123,7 @@ cd libs/util/tailwind-preset
 FIGMA_ACCESS_TOKEN=your_token FIGMA_FILE_KEY=your_client_file_key node sync-tokens.mjs
 ```
 
-`sync-tokens.mjs` does not exist in the stock starter kit yet — see the Status note at the top of
+`sync-tokens.mjs` does not exist in the stock starter kit yet - see the Status note at the top of
 this file. This is the command it should support once built.
 
 ### Token naming convention
@@ -148,7 +148,7 @@ Examples:
 1. Figma Variables are updated
 2. Token sync runs at 2am (or trigger manually via GitHub Actions → Design Token Sync → Run workflow)
 3. PR is automatically committed with the updated `tailwind.config.js`
-4. Merge the PR — the updated colors are live in the next deploy
+4. Merge the PR - the updated colors are live in the next deploy
 
 ### A developer adds a new component
 
@@ -161,4 +161,4 @@ Examples:
 ### A designer adds a new component variant in Figma
 
 1. Update the `.figma.tsx` mapping file to include the new variant in the `figma.enum()` call
-2. Push to main — published automatically
+2. Push to main - published automatically
