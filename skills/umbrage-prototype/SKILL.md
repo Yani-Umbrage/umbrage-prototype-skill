@@ -24,8 +24,22 @@ You are helping someone build or maintain a React prototype using the Umbrage de
 
 Read the relevant reference file for the detailed steps:
 
+- **Starting a new prototype fast →** `/new-prototype` (clones the starter kit and wires up
+  `clientTheme` from one brand color in a single step — use this instead of the manual clone in
+  `prototype-guide.md` Step 2 unless the user specifically wants to walk through it by hand)
 - **Building a prototype end-to-end →** `references/prototype-guide.md`
 - **Figma sync setup →** `references/figma-sync.md`
+
+### Scope modes
+
+- **Prototype mode (default):** frontend-only, mock data, no backend. Use this for clickable demos.
+  Everything lives in `apps/frontend-react/src/app/`.
+- **Full-stack POC mode:** when the goal is to prove the end-to-end product, the backend app is in
+  scope too. Confirm the backend stack first — the repo is `nestjs-react-starter`, but its pre-push
+  hook also has a `backend-go` target, so ask which backend(s) are actually in play before writing
+  server code.
+
+Ask which mode applies before scaffolding if it isn't obvious from the request.
 
 ---
 
@@ -46,25 +60,34 @@ Every prototype is for a specific client. Before writing any code or touching th
 
 **How branding flows through the system:**
 
-1. **Figma first** — The designer duplicates the V2.2 Starter Kit and updates Variables in Figma to match the client's brand. This is the source of truth.
-2. **Token sync to code** — Once Figma Variables are updated, run the design token sync (see `references/figma-sync.md`) to regenerate `tailwind.config.js`. This propagates client colors to every component automatically.
-3. **Never hardcode client hex values in components.** Always update the tokens and let them flow through. If a component uses `text-[#069BD7]` (a ConEd color), that's a bug — replace it with the appropriate token.
+1. **`clientTheme` (default, works today)** — `/new-prototype` generates
+   `apps/frontend-react/src/app/theme/clientTheme.ts` from a single primary brand color (it derives
+   `primaryDark` automatically). Components read from it directly or via the `--client-primary` /
+   `--client-primary-dark` CSS variables it sets. This has no dependency on Figma automation or a
+   paid plan, so it's the default path for prototypes — not a fallback.
 
-**For quick prototypes where token sync isn't set up yet:** define a `clientTheme` object in `src/app/data/theme.ts` with the client's hex values, and import from there. This keeps hardcoded values in one place and makes them easy to replace later.
+   ```ts
+   // apps/frontend-react/src/app/theme/clientTheme.ts
+   export const clientTheme = {
+     primary: '#YOUR_CLIENT_PRIMARY',
+     primaryDark: '#YOUR_CLIENT_DARK', // auto-derived by /new-prototype if not given
+     bodyText: '#25272C',
+     secondaryText: '#6B7280',
+     background: '#F5F7FA',
+     border: '#EDEEF1',
+   };
+   ```
 
-```ts
-// src/app/data/theme.ts — temporary until token sync is configured
-export const clientTheme = {
-  primary: '#YOUR_CLIENT_PRIMARY',
-  navy: '#YOUR_CLIENT_DARK',
-  bodyText: '#25272C',
-  secondaryText: '#6B7280',
-  background: '#F5F7FA',
-  border: '#EDEEF1',
-};
-```
+2. **Full Figma Variable sync (optional upgrade)** — if an engagement sets up Design Token Sync
+   (see `references/figma-sync.md` — this requires a paid Figma plan and, as of writing, building
+   `sync-tokens.mjs` since it doesn't exist yet), the designer duplicates the V2.2 Starter Kit,
+   updates Variables there, and they flow into `tailwind.config.js` automatically. Treat this as an
+   upgrade path, not a prerequisite for starting a prototype.
+3. **Never hardcode client hex values in components.** Always read from `clientTheme` (or synced
+   tokens once set up) and let them flow through. If a component uses a literal hex like
+   `text-[#069BD7]`, that's a bug — replace it with the appropriate token.
 
-**Figma kit for the client:** The V2.2 Starter Kit should be duplicated (not forked from the original) for each engagement. The duplicate is the client-specific source of truth. After duplication, the designer updates Variables in the new file — no changes go back to the shared V2.2 kit.
+**Figma kit for the client:** The V2.2 Starter Kit should be duplicated (not forked from the original) for each engagement if/when you set up full Figma sync. The duplicate is the client-specific source of truth. After duplication, the designer updates Variables in the new file — no changes go back to the shared V2.2 kit.
 
 ---
 
@@ -74,7 +97,7 @@ export const clientTheme = {
 
 Before writing any code, figure out where the user is in the workflow:
 
-- **Starting fresh?** → First confirm: client name, primary brand color, and whether they have a duplicated client Figma file. Then walk through Steps 1–5 of the prototype guide (clone, install, run dev server).
+- **Starting fresh?** → First confirm: client name and primary brand color (a duplicated client Figma file is nice to have, not required to start). Then run `/new-prototype` to clone, theme, and boot the project in one step. Only fall back to prototype guide Steps 1–9 by hand if the user wants to see each step or `/new-prototype` doesn't fit their case.
 - **Building a screen?** → Ask what screen, what data it shows, what role sees it. Then scaffold the page file and wire the route.
 - **Component question?** → Answer with the exact import path, required props, and any gotchas (listed below).
 - **Figma sync issue?** → Check whether it's Code Connect (code → Figma) or Design Tokens (Figma → code) and follow the relevant section in the sync guide.
@@ -129,6 +152,7 @@ All imports come from `@nestjs-react-starter/ui-components`.
 ```
 apps/frontend-react/src/app/
 ├── auth/AuthContext.tsx      ← auth pattern lives here
+├── theme/clientTheme.ts      ← client brand colors (see Client branding above)
 ├── data/
 │   ├── types.ts              ← data interfaces
 │   ├── seed.ts               ← mock data
@@ -158,4 +182,6 @@ Each engagement uses a **client-specific duplicate** of this file with the clien
 Read these when you need step-by-step detail:
 
 - `references/prototype-guide.md` — full 13-step walkthrough from clone to Vercel deploy
-- `references/figma-sync.md` — Code Connect setup and Design Token sync
+- `references/figma-sync.md` — Code Connect setup and Design Token sync (opt-in; see Status note)
+
+See `../../commands/new-prototype.md` for the fast-start scaffolding command.
