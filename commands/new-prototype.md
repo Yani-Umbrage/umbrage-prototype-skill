@@ -16,9 +16,10 @@ one color instead of walking through `references/prototype-guide.md` Steps 1-9 b
 ## What this does
 
 Clones `nestjs-react-starter`, generates `clientTheme.ts` from a single primary brand hex (deriving
-the dark shade automatically), scaffolds the standard auth/data-layer stubs, verifies the project
-boots, and — only if asked — creates and pushes a new GitHub repo. This is the fast-start path; for
-a from-scratch walkthrough of the same steps, see `references/prototype-guide.md`.
+the dark shade automatically), optionally wires up a client tagline and a non-default font family,
+scaffolds the standard auth/data-layer stubs, verifies the project boots, and — only if asked —
+creates and pushes a new GitHub repo. This is the fast-start path; for a from-scratch walkthrough of
+the same steps, see `references/prototype-guide.md`.
 
 ## Inputs to collect first
 
@@ -26,7 +27,13 @@ a from-scratch walkthrough of the same steps, see `references/prototype-guide.md
 2. Primary brand color as a hex, e.g. `#F40009` (required)
 3. Optional: an explicit dark/accent hex override (otherwise derived automatically)
 4. Optional: logo file (SVG preferred)
-5. Optional: GitHub destination (org or user, plus visibility) if a repo should be created now
+5. Optional: tagline / display subtitle (e.g. "Prototype", or a short client description) — shown
+   alongside the client name in the Sidebar header and login page if the user wants it there
+6. Optional: font family override (e.g. "Poppins", "Inter") — if given, ask whether it's a Google
+   Font (most common for prototypes) or a self-hosted font the user has files for. If omitted, keep
+   the design system's default typeface (Cera Pro) — don't ask for this unless the user cares about
+   matching a specific brand font
+7. Optional: GitHub destination (org or user, plus visibility) if a repo should be created now
 
 If the user doesn't have a duplicated client Figma file yet, that's fine — it isn't required to
 start. Don't block on it.
@@ -65,8 +72,10 @@ const PRIMARY_DARK = '<CLIENT_PRIMARY_DARK_HEX>'; // use darken(PRIMARY, 40) if 
 
 export const clientTheme = {
   clientName: '<CLIENT_NAME>',
+  tagline: '<CLIENT_TAGLINE>', // defaults to 'Prototype' if not given
   primary: PRIMARY,
   primaryDark: PRIMARY_DARK,
+  fontFamily: '<CLIENT_FONT_FAMILY>', // defaults to 'cera pro' (the design system default) if not given
   bodyText: '#25272C',
   secondaryText: '#6B7280',
   background: '#F5F7FA',
@@ -77,33 +86,96 @@ export function applyClientTheme() {
   const root = document.documentElement.style;
   root.setProperty('--client-primary', clientTheme.primary);
   root.setProperty('--client-primary-dark', clientTheme.primaryDark);
+  root.setProperty('--client-font-family', clientTheme.fontFamily);
 }
 ```
 
 If no dark/accent override was given, compute `PRIMARY_DARK` with the `darken()` function above
 (the same derivation the POC Studio's `brandTheme.ts` uses) instead of asking the user for a second
-color — one input is the point.
+color — one input is the point. `tagline` and `fontFamily` just get their defaults if not given.
 
 4. Call `applyClientTheme()` once at app root, in `apps/frontend-react/src/main.tsx`, before the app
    renders.
 
-5. Scaffold the stub files from `references/prototype-guide.md` Steps 7-8 verbatim, so the project
+5. **Only if a font family override was given** — do not touch `libs/util/tailwind-preset/` for
+   this, it's the shared design system used by every engagement. Every `typography-font-*` class
+   (`font-title-xl`, `font-body-sm`, etc.) hardcodes `font-family: cera pro` at the preset level, so
+   the override has to happen in `apps/frontend-react/tailwind.config.js`, which each cloned project
+   already owns independently via Tailwind's `presets` mechanism:
+
+   a. If it's a Google Font, add it to `apps/frontend-react/index.html`'s `<head>`:
+      ```html
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link href="https://fonts.googleapis.com/css2?family=<FONT_NAME>:wght@400;500;600;700&display=swap" rel="stylesheet" />
+      ```
+      If it's self-hosted, follow the existing `@font-face` pattern for Cera Pro in
+      `apps/frontend-react/src/styles.css` instead, using the client's font files.
+
+   b. Update `apps/frontend-react/tailwind.config.js` to override the font family for every
+      typography class, without modifying the shared preset:
+      ```js
+      const { createGlobPatternsForDependencies } = require('@nx/react/tailwind');
+      const { join } = require('path');
+      const sharedTailwindConfig = require('../../libs/util/tailwind-preset/tailwind.config');
+
+      const CLIENT_FONT_FAMILY = "'<CLIENT_FONT_FAMILY>', ui-sans-serif, system-ui, sans-serif";
+      const TYPOGRAPHY_KEYS = [
+        'font-title-4xs', 'font-title-3xs', 'font-title-2xs', 'font-title-xs', 'font-title-sm',
+        'font-title-md', 'font-title-lg', 'font-title-xl', 'font-title-2xl', 'font-title-3xl',
+        'font-body-2xs', 'font-body-2xs-strong', 'font-body-xs', 'font-body-xs-strong',
+        'font-body-sm', 'font-body-sm-strong', 'font-body-base', 'font-body-base-strong',
+        'font-body-lg', 'font-body-lg-strong', 'font-body-xl', 'font-body-xl-strong',
+        'font-caption', 'font-caption-strong',
+        'font-label-2xs', 'font-label-xs', 'font-label-sm', 'font-label-base', 'font-label-lg',
+        'font-label-xl', 'font-label-2xl',
+        'font-button-sm', 'font-button-base', 'font-button-lg',
+        'font-menu-sm', 'font-menu-base', 'font-menu-lg',
+      ];
+
+      /** @type {import('tailwindcss').Config} */
+      module.exports = {
+        presets: [sharedTailwindConfig],
+        content: [
+          join(__dirname, '{src,pages,components,app}/**/*!(*.stories|*.spec).{ts,tsx,html}'),
+          ...createGlobPatternsForDependencies(__dirname),
+        ],
+        theme: {
+          extend: {
+            typography: Object.fromEntries(
+              TYPOGRAPHY_KEYS.map((key) => [key, { css: { 'font-family': CLIENT_FONT_FAMILY } }]),
+            ),
+          },
+        },
+        plugins: [require('@tailwindcss/typography')],
+      };
+      ```
+      `TYPOGRAPHY_KEYS` is the full list from the current preset — if the design system has added
+      more typography classes since this was written, diff against
+      `libs/util/tailwind-preset/tailwind.config.js`'s `typography` block and add any missing keys.
+
+6. Scaffold the stub files from `references/prototype-guide.md` Steps 7-8 verbatim, so the project
    isn't an empty shell: `auth/AuthContext.tsx`, `data/types.ts`, `data/seed.ts`, `data/dataLayer.ts`.
 
-6. If a logo was provided, copy it into `apps/frontend-react/src/assets/` and wire it into the
-   `Sidebar` `logo` prop as shown in `references/prototype-guide.md` Step 9.
+7. If a logo was provided, copy it into `apps/frontend-react/src/assets/` and wire it into the
+   `Sidebar` `logo` prop as shown in `references/prototype-guide.md` Step 9. If a tagline was given,
+   mention to the user it's available as `clientTheme.tagline` for the login page or Sidebar header
+   — don't force it into a specific component, since that depends on the screens they build.
 
-7. Install dependencies and verify the project boots before handing it off:
+8. Install dependencies and verify the project boots before handing it off:
 
 ```bash
 yarn install
 yarn nx serve frontend-react
 ```
 
-Confirm the dev server starts cleanly (watch for the local URL in the output), then stop it. This
-catches broken theme wiring immediately instead of leaving it for whoever builds the first screen.
+Confirm the dev server starts cleanly (watch for the local URL in the output). If a font override
+was set, also open the app and confirm a heading actually renders in the new font — a Tailwind
+config change sometimes needs the dev server restarted, not just hot-reloaded, to take effect. Then
+stop the server. This catches broken theme wiring immediately instead of leaving it for whoever
+builds the first screen.
 
-8. Only if a GitHub destination was given in step 1:
+9. Only if a GitHub destination was given in step 1:
 
 ```bash
 gh repo create <org-or-user>/<name> --private
@@ -111,7 +183,7 @@ git remote add origin https://github.com/<org-or-user>/<name>.git
 git push -u origin main
 ```
 
-9. Report a checklist of what's still manual and why it's not automated here:
+10. Report a checklist of what's still manual and why it's not automated here:
    - Duplicate the V2.2 Figma kit for this client — needed for Dev Mode / Code Connect / eventual
      token sync, not for the prototype itself
    - Decide now vs. later on setting up full Figma Variable sync (`references/figma-sync.md`) —
@@ -126,11 +198,19 @@ git push -u origin main
   a malformed hex breaks `darken()`'s parsing.
 - **`gh repo create` fails** — confirm `gh auth status` is logged in and the destination org/user
   allows repo creation from this account.
+- **Font override doesn't visually change anything** — confirm the edit went into
+  `apps/frontend-react/tailwind.config.js`, not `libs/util/tailwind-preset/tailwind.config.js` (the
+  shared preset always wins if both define the same key, and editing it affects every other
+  engagement). Also confirm the Google Font `<link>` tag actually resolves (check the Network tab)
+  and restart `yarn nx serve` rather than relying on hot reload.
 
 ## Design notes
 
 - Asking for one primary color instead of six separate tokens is the main efficiency lever — it
   reuses the derivation the POC Studio's `brandTheme.ts` already validated (one color in, a full
   usable palette out), rather than re-deriving palette math from scratch.
+- Font family is opt-in and asked for last, after color, because most prototypes never need it —
+  don't add the tailwind.config.js override step unless the user actually wants a non-default
+  typeface.
 - The interface is written so it doesn't need to change once Code Connect and token sync actually
-  exist: swap the hex-color prompt for a Figma file URL later without touching steps 2 or 5-9.
+  exist: swap the hex-color prompt for a Figma file URL later without touching steps 2 or 6-9.
