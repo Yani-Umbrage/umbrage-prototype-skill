@@ -2,7 +2,7 @@
 
 ### From Figma Starter Kit → Working App → GitHub + Vercel
 
-A step-by-step guide for building a clickable, deployed prototype using the Umbrage design system and React starter kit. No backend required.
+A step-by-step guide for building a clickable, deployed prototype using the Umbrage design system and React starter kit. No backend required in prototype mode (see Scope modes in `SKILL.md`).
 
 ---
 
@@ -69,15 +69,15 @@ Open the file and look at the left sidebar pages:
 | Radio | `RadioGroup` |
 | Avatar | `Avatar, AvatarSize` |
 
-### Figma ↔ Code sync is set up
+### Figma ↔ Code sync is opt-in infrastructure
 
-The repo has two sync mechanisms already configured (see [`FIGMA_SYNC.md`](FIGMA_SYNC.md)):
+The repo supports two sync mechanisms (see [`figma-sync.md`](figma-sync.md)), but neither is set up by default — they're a one-time setup an engagement does when it needs them, not something that ships pre-configured:
 
-1. **Code Connect** — real React code snippets appear in Figma Dev Mode when you click any component. You'll see the exact import and props to use. Just add your `FIGMA_ACCESS_TOKEN` to GitHub Secrets and push — the GitHub Action publishes automatically.
+1. **Code Connect** — once set up, real React code snippets appear in Figma Dev Mode when you click any component. Requires filling in `.figma.tsx` node IDs and running the initial publish (see `figma-sync.md`).
 
-2. **Design Token Sync** — a nightly GitHub Action reads Figma Variables and regenerates the color tokens in `libs/util/tailwind-preset/tailwind.config.js`. Designers update colors in Figma; they land in code the next morning.
+2. **Design Token Sync** — once set up, a nightly GitHub Action reads Figma Variables and regenerates the color tokens in `libs/util/tailwind-preset/tailwind.config.js`. Requires a paid Figma plan (Variables REST API) and a `sync-tokens.mjs` script that the engagement builds per `figma-sync.md`'s spec.
 
-**For prototypes**: the tokens are already in the code. Use them directly with Tailwind (e.g. `text-[var(--color-light-text-button-primary-default)]` or the named classes). You don't need to run either sync yourself.
+**For prototypes, don't wait on either sync.** Use `clientTheme` (Step 10) — it's the fast, working-today path for getting a client's brand color into the code, whether or not this engagement ever sets up full Figma sync. If `/new-prototype` was used to scaffold this project, `clientTheme` is already wired up.
 
 ### Finding color and spacing values
 
@@ -426,12 +426,14 @@ export default function DashboardPage() {
 
   return (
     <div className="p-8">
-      <h1 className="typography-font-title-xl text-[#003B5C]">Dashboard</h1>
+      <h1 className="typography-font-title-xl text-[var(--client-primary-dark)]">Dashboard</h1>
       <p className="typography-font-body-sm text-[#6B7280] mt-1">{properties.length} properties</p>
     </div>
   );
 }
 ```
+
+`--client-primary-dark` is a CSS variable set by `clientTheme` (see below) — never hardcode a brand hex directly in a component.
 
 **Typography classes** (from the design system):
 | Class | Use |
@@ -443,15 +445,18 @@ export default function DashboardPage() {
 | `typography-font-body-xs` | Small/secondary text |
 | `typography-font-label-sm` | Labels, tags |
 
-**ConEd brand colors** (or swap for your client's):
-| Token | Hex |
+**Color tokens** — use your client's tokens, never these literals. The neutrals below are design-system defaults and are safe to reuse; the brand colors MUST come from `clientTheme` (`apps/frontend-react/src/app/theme/clientTheme.ts`, see `SKILL.md`), not hardcoded hex:
+
+| Token | Source |
 |---|---|
-| Primary blue | `#069BD7` |
-| Dark navy | `#003B5C` |
-| Body text | `#25272C` |
-| Secondary text | `#6B7280` |
-| Background | `#F5F7FA` |
-| Border | `#EDEEF1` |
+| Primary brand | `clientTheme.primary` / `var(--client-primary)` — client-specific, do NOT hardcode |
+| Dark / accent | `clientTheme.primaryDark` / `var(--client-primary-dark)` — client-specific |
+| Body text | `#25272C` — design-system default |
+| Secondary text | `#6B7280` — design-system default |
+| Background | `#F5F7FA` — design-system default |
+| Border | `#EDEEF1` — design-system default |
+
+> Example only (ConEd BEUP 3.0): primary `#069BD7`, dark navy `#003B5C`. Do not reuse these for other clients.
 
 ---
 
@@ -461,7 +466,7 @@ Always include quick-fill demo buttons so reviewers don't need to remember passw
 
 ```tsx
 <button onClick={() => quickFill('user@example.com')}>
-  <p className="typography-font-label-sm text-[#069BD7]">Customer Account</p>
+  <p className="typography-font-label-sm text-[var(--client-primary)]">Customer Account</p>
   <p className="typography-font-body-xs text-[#6B7280]">user@example.com</p>
 </button>
 ```
@@ -619,7 +624,7 @@ apps/frontend-react/src/app/
 
 ---
 
-## Reference: BEUP 3.0 Prototype
+## Example implementation (one client) — do not reuse its colors
 
 The ConEd BEUP 3.0 prototype built with this guide is at:
 
