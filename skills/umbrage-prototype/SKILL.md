@@ -28,8 +28,9 @@ Read the relevant reference file for the detailed steps:
 - **Starting a new prototype fast →** `/new-prototype` (clones the starter kit and wires up
   `clientTheme` from one brand color in a single step - use this instead of the manual clone in
   `prototype-guide.md` Step 2 unless the user specifically wants to walk through it by hand)
-- **Sharing a prototype →** `/publish-preview` (builds a static bundle and publishes it to Umbrage
-  Pages, returning an SSO-gated link - this replaces the old Vercel deploy)
+- **Sharing a prototype →** `/publish-pages` (builds a static bundle and opens a PR adding it as a
+  new project on Umbrage Pages - this replaces the old Vercel deploy; goes through review, not an
+  instant link)
 - **Building a prototype end-to-end →** `references/prototype-guide.md`
 - **Figma sync setup →** `references/figma-sync.md`
 
@@ -182,19 +183,28 @@ Each engagement uses a **client-specific duplicate** of this file with the clien
 
 ## Publishing to Umbrage Pages
 
-Prototypes are shared via **Umbrage Pages**, not Vercel. Use `/publish-preview`: it builds a static
-bundle and publishes it to an SSO-gated link (`https://preview.pages.umbrage.com/p/<hash>/`) that any
-signed-in Umbrage user can open. Claude just hands back the link.
+Prototypes are shared via **Umbrage Pages**, not Vercel, and via **git, not the preview MCP tool**.
+Use `/publish-pages`: it builds the prototype and opens a PR adding it as a new project folder at
+`pages.umbrage.com/<project-name>/`. It goes through the repo's normal review process, so the command
+hands back a **PR link**, not an instant live URL.
 
-The publisher accepts **text files only**, serves at a **sub-path**, and does **no SPA rewrites**, so
-a publishable build needs: relative base (`base: './'`), `HashRouter` (not `BrowserRouter`), and no
-binary assets (inline fonts/images as base64, or use SVG). `/publish-preview` supports **both
-templates**: `poc-template` is already compliant, and `nestjs-react-starter` gets the static-safe
-build applied automatically. Prototypes scaffolded by `/new-prototype` are already publish-ready.
+There's a separate `publish_preview` MCP tool that publishes instantly to a hashed
+`preview.pages.umbrage.com/p/<hash>/` link. Don't use it for prototypes: Umbrage Pages leadership
+confirmed it's meant for one-off static content (reports, recaps), not full React apps, and a real
+build is too large to pass through that tool anyway (the model can't read or emit a production
+bundle's minified JS as a tool-call argument). Git has no such limit, which is the other reason this
+is the right path, not just the sanctioned one.
 
-True per-project placement on `pages.umbrage.com` (a named folder rather than a hashed link) needs the
-`Umbrage-Studios/umbrage-client-pages` repo and its GitHub connector, which is not authorized yet - so
-that path is documented but blocked. See `commands/publish-preview.md`.
+A publishable build still needs relative base (`base: './'`) and `HashRouter` (not `BrowserRouter`),
+since it's served at a sub-path with no server-side rewrites. It does NOT need binary assets
+avoided or inlined, git handles fonts and images as normal files. Prototypes scaffolded by
+`/new-prototype` are already set up this way.
+
+The Umbrage Pages repo expects a specific structure: a `projects/<project-name>/` folder with the
+build's `index.html` at its root (not nested under `dist/`), plus a `CLAUDE.md` inside that folder
+describing the prototype. See `commands/publish-pages.md` for the full mechanics. The actual repo
+name and write access are still being confirmed with the Pages team; treat that as a placeholder
+until it's filled in.
 
 ---
 

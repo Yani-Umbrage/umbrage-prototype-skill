@@ -495,31 +495,38 @@ const quickFill = (email: string) => {
 
 ## Step 12 - Publish to Umbrage Pages
 
-Prototypes publish to **Umbrage Pages**, not a third-party host. The fastest path is the
-`/publish-preview` command: it builds the static bundle and hands back an SSO-gated link
-(`https://preview.pages.umbrage.com/p/<hash>/`) that any signed-in Umbrage user can open. No Vercel
-account, no manual upload.
+Prototypes publish to **Umbrage Pages**, not a third-party host, and via a **pull request**, not an
+instant upload. The `/publish-pages` command builds the static bundle and opens a PR adding it as a
+new project folder at `pages.umbrage.com/<project-name>/`:
 
 ```
-/publish-preview
+/publish-pages
 ```
 
-It asks for a project name (used as the preview's title), builds, and returns the link.
+It asks for a project name, builds, opens the PR, and hands back the **PR link**. The prototype goes
+live once that PR is reviewed and merged, same as any other change to that repo, there's no instant
+link here.
 
-**What makes a build publishable.** The Umbrage Pages publisher accepts UTF-8 text files only, serves
-at a sub-path, and does no SPA rewrites. So the build must be:
+There's also a `publish_preview` MCP tool that publishes instantly to a hashed
+`preview.pages.umbrage.com/p/<hash>/` link. Don't use it for a prototype: Umbrage Pages leadership
+confirmed that tool is for one-off static content (reports, recaps), not full React apps. A
+production build's bundle is too large to pass through it anyway, git is both the sanctioned and the
+only workable path here.
+
+**What makes a build publishable.** The app is served at a sub-path with no server-side rewrites, so
+the build needs:
 
 - **Relative base** - `base: './'` in the Vite config, so asset URLs resolve at the sub-path.
 - **HashRouter, not BrowserRouter** - client-side routing via `#/path`, so refreshes and deep links
   work without server rewrites. (Projects scaffolded by `/new-prototype` already use HashRouter.)
-- **Text-only, no binary assets** - no `.ttf`/`.woff`/`.png`/`.jpg` in the output. The design
-  system's Cera Pro fonts are binary, so they must be inlined as base64 (e.g. `vite-plugin-singlefile`
-  or a high `build.assetsInlineLimit`), or dropped in favor of a system-font fallback. `SVG` images
-  are fine as-is.
 
-`/publish-preview` handles these for you (poc-template is already compliant; nestjs-react-starter
-gets the static-safe build applied). See `commands/publish-preview.md` for the full mechanics and the
-not-yet-available path for true per-project placement on `pages.umbrage.com`.
+Binary assets (fonts, images) are fine as-is, there's no text-only constraint once you're publishing
+through git.
+
+`/publish-pages` handles the build and the PR for you (poc-template is already compliant;
+nestjs-react-starter gets the static-safe build applied). See `commands/publish-pages.md` for the
+full mechanics, the `projects/<name>/index.html`-at-root convention the repo expects, and the
+still-open question of the exact repo name and access.
 
 ---
 

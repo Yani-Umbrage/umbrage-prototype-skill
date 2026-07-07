@@ -18,13 +18,14 @@ Clones `nestjs-react-starter`, wires up client branding from a single primary co
 (HashRouter + relative base), and optionally creates and pushes a new GitHub repo. Use this to start
 a new engagement instead of cloning by hand.
 
-### Command - `/publish-preview`
-Builds the prototype into a self-contained static bundle and publishes it to Umbrage Pages, returning
-an SSO-gated `preview.pages.umbrage.com/p/<hash>/` link that any signed-in Umbrage user can open. No
-Vercel, no manual upload. Asks for a project name (used as the preview's title). Replaces the old
-Vercel deploy step.
+### Command - `/publish-pages`
+Builds the prototype and opens a pull request adding it as a new project folder on Umbrage Pages
+(`pages.umbrage.com`). Goes through the repo's normal review process, so you get back a PR link, not
+an instant URL. Replaces the old Vercel deploy step. This is the git/PR path, not the preview MCP
+tool, since Umbrage Pages leadership confirmed the preview tool is for one-off static content, not
+full React apps.
 
-**Requires:** the Umbrage Pages connector connected in Claude.
+**Requires:** access to the Umbrage Pages repo (ask the Pages team).
 
 ### Command - `/sync-tokens`
 Syncs Figma Variables to `tailwind.config.js` immediately, without waiting for the nightly GitHub Action. Use whenever a designer updates brand colors in Figma and you need them in code now.
@@ -40,7 +41,7 @@ Publishes Code Connect mappings so Figma Dev Mode shows real React snippets for 
 
 1. Install this plugin in Cowork (double-click the `.plugin` file)
 2. For prototypes, you're done - `/new-prototype` and the skill's `clientTheme` path don't need
-   any Figma automation set up. To publish, connect the Umbrage Pages connector in Claude (no Vercel
+   any Figma automation set up. To publish, you'll need access to the Umbrage Pages repo (no Vercel
    account needed).
 3. If you also want Figma Code Connect and nightly token sync, add your Figma Personal Access
    Token to your repo's GitHub Secrets as `FIGMA_ACCESS_TOKEN` and follow the One-Time Setup in

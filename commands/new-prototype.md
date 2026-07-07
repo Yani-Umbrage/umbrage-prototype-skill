@@ -101,7 +101,7 @@ color - one input is the point. `tagline` and `fontFamily` just get their defaul
    no colors). Then call `applyClientTheme()` once at app root, before the app renders.
 
    **Make it publish-ready from the start** so it can go straight to Umbrage Pages later (see
-   `/publish-preview`) with no rework:
+   `/publish-pages`) with no rework:
    - Use `HashRouter` (not `BrowserRouter`) for the app's router. Umbrage Pages serves at a sub-path
      with no SPA rewrites, so `BrowserRouter` breaks on refresh and deep links. A stock clone uses
      `BrowserRouter` in `apps/frontend-react/src/main.tsx` / `src/app/app.tsx` - switch it.
@@ -196,9 +196,9 @@ git remote add origin https://github.com/<org-or-user>/<name>.git
 git push -u origin main
 ```
 
-10. Offer to publish it to Umbrage Pages right away with `/publish-preview` - it builds the static
-    bundle and hands back an SSO-gated shareable link, no third-party host. This is the fast way to
-    get the prototype in front of the team.
+10. Offer to publish it to Umbrage Pages right away with `/publish-pages` - it builds the static
+    bundle and opens a PR adding it as a new project, so it goes through the repo's normal review
+    before it's live. This is the way to get the prototype in front of the team for real.
 
 11. Report a checklist of what's still manual and why it's not automated here:
    - Duplicate the V2.2 Figma kit for this client - needed for Dev Mode / Code Connect / eventual
@@ -206,7 +206,8 @@ git push -u origin main
    - Decide now vs. later on setting up full Figma Variable sync (`references/figma-sync.md`) -
      optional upgrade, not required to ship
    - Add `FIGMA_ACCESS_TOKEN` / `FIGMA_FILE_KEY` if/when that sync gets set up
-   - Publish to Umbrage Pages with `/publish-preview` when you want to share it
+   - Publish to Umbrage Pages with `/publish-pages` when you want to share it (opens a PR, not an
+     instant link)
 
 ## If it fails
 
