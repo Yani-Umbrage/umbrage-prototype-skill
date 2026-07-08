@@ -94,6 +94,27 @@ argument. Use this command for real prototypes; don't reach for `publish_preview
    reviewed and merged, matching the repo's normal process. Say as much so nobody expects an instant
    link the way `publish_preview` gives one.
 
+## Testing without Umbrage Pages access
+
+If you don't have access to the real pages repo yet, don't wait idle, the whole mechanism can be
+validated against a personal sandbox repo instead:
+
+1. Create a throwaway public GitHub repo (`gh repo create <you>/pages-sandbox --public`).
+2. Seed it with a root `CLAUDE.md` stating the same convention (`projects/<name>/` with `index.html`
+   at that folder's root).
+3. Enable GitHub Pages on it from the `main` branch root
+   (`gh api repos/<you>/pages-sandbox/pages -X POST -f "source[branch]=main" -f "source[path]=/"`).
+4. Run steps 1-6 above against that repo instead of the real one, merge the PR yourself, and open
+   `https://<you>.github.io/pages-sandbox/<project-name>/`.
+
+GitHub Pages has the same relevant constraints as the real target (served at a sub-path, no
+server-side rewrites), so this genuinely exercises the static-build requirements, the
+`index.html`-at-root convention, and the PR mechanics, not just a syntax check. This is how the
+command was validated end to end before real repo access existed: build, PR, merge, and a live
+render (color, font, and a hash-routed page surviving a refresh) all confirmed against
+`Yani-Umbrage/umbrage-pages-sandbox`. Swap in the real repo URL once access is granted; nothing else
+about the flow changes.
+
 ## If it fails
 
 - **Clone or push denied** - access to the pages repo hasn't been granted yet. Don't try to work
