@@ -2,12 +2,25 @@
 
 Two-way sync between the Umbrage Figma design system and the code.
 
-> **Status:** this describes the target setup and its schema, not something that ships pre-built.
-> As of writing, `nestjs-react-starter` has no `.figma.tsx` mapping files under `libs/ui-components`
-> and no `libs/util/tailwind-preset/sync-tokens.mjs`. The first engagement that needs either sync
-> has to build it using the spec below. Until then, use `clientTheme` for prototype branding
-> (see `prototype-guide.md` Step 10 / `SKILL.md`) - it doesn't depend on this infrastructure or a
-> paid Figma plan.
+> **Status:** `nestjs-react-starter` itself still ships with no `.figma.tsx` mapping files under
+> `libs/ui-components` and no `libs/util/tailwind-preset/sync-tokens.mjs` - neither sync is
+> pre-configured in the shared starter kit, by design, since each engagement's Figma file key
+> differs. This skill now ships **templates** for both at
+> `skills/umbrage-prototype/templates/sync-tokens.mjs` and
+> `skills/umbrage-prototype/templates/badge.figma.tsx`, matching the spec below. Copy them into
+> your engagement's cloned prototype repo (never into the shared starter kit) when you set up
+> either sync - see the One-Time Setup and per-sync sections below for exactly where.
+>
+> `sync-tokens.mjs`'s core logic (Figma variable name conversion, color conversion, and the
+> tailwind.config.js insert-or-update block) has been smoke-tested against a mocked Figma API
+> response, but neither template has been run against a **real** Figma file yet - no
+> `FIGMA_ACCESS_TOKEN` or client file key was available when they were written. Validate against
+> your engagement's duplicated V2.2 file before trusting the output, and update this note once
+> either has run successfully for the first time against real data.
+>
+> Until Design Token Sync is actually running for your engagement, use `clientTheme` for prototype
+> branding (see `prototype-guide.md` Step 10 / `SKILL.md`) - it doesn't depend on this
+> infrastructure or a paid Figma plan, and nothing about adopting sync later requires reworking it.
 
 ## What's Included
 
@@ -44,8 +57,12 @@ variable (Settings → Secrets and variables → Actions → Variables tab):
 - Value: your client's duplicated file's key (NOT `KjT0pvJZg3HrTM2SGxlZxy` - that's the shared kit,
   for reference only)
 
-Once both the secret and this variable are set, and the workflows/scripts below have been
-implemented in this repo (see the Status note above), both Actions will work automatically.
+Once both the secret and this variable are set, and the scripts below have been copied in from this
+skill's templates (see the Status note above), you can run either sync manually. **The nightly and
+on-push GitHub Actions themselves still need to be written** - this skill ships the `sync-tokens.mjs`
+and `.figma.tsx` templates the Actions would call, but not `.github/workflows/*.yml` for either
+schedule yet. Until those workflows exist, run both syncs manually (see "Running manually" /
+"Publishing manually" below) rather than assuming they're automatic.
 
 ---
 
@@ -69,6 +86,19 @@ libs/ui-components/src/lib/
 │   └── button.figma.tsx
 └── ...
 ```
+
+### First-time setup: copy the template
+
+If `libs/ui-components/src/lib/badge/badge.figma.tsx` doesn't exist yet in your engagement's repo,
+copy the starting point from this skill:
+
+```bash
+cp <path-to-this-skill>/templates/badge.figma.tsx libs/ui-components/src/lib/badge/badge.figma.tsx
+```
+
+It's untested against a real Figma file (see the Status note above) - review it against your
+client's actual Badge variants before publishing, then use it as the reference structure for every
+other component's `.figma.tsx` file.
 
 ### Filling in node IDs
 
@@ -116,15 +146,25 @@ Reads color Variables from the Figma file and updates the color tokens in `libs/
 4. Rewrites the colors block in `tailwind.config.js`
 5. Commits the changes if anything changed
 
+### First-time setup: copy the template
+
+If `libs/util/tailwind-preset/sync-tokens.mjs` doesn't exist yet in your engagement's repo, copy the
+starting point from this skill:
+
+```bash
+cp <path-to-this-skill>/templates/sync-tokens.mjs libs/util/tailwind-preset/sync-tokens.mjs
+```
+
+It's smoke-tested against a mocked Figma response but untested against a real Figma file (see the
+Status note above) - run it once manually and review the `tailwind.config.js` diff carefully before
+wiring it into a nightly GitHub Action.
+
 ### Running manually
 
 ```bash
 cd libs/util/tailwind-preset
 FIGMA_ACCESS_TOKEN=your_token FIGMA_FILE_KEY=your_client_file_key node sync-tokens.mjs
 ```
-
-`sync-tokens.mjs` does not exist in the stock starter kit yet - see the Status note at the top of
-this file. This is the command it should support once built.
 
 ### Token naming convention
 
