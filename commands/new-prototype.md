@@ -1,7 +1,7 @@
 ---
 name: new-prototype
 description: Clone nestjs-react-starter and scaffold a new client prototype with branding wired in from a single primary color. Use when starting a new engagement instead of manually cloning the starter kit and hand-writing clientTheme.
-tools:
+allowed-tools:
   - Bash
   - Read
   - Write
@@ -45,10 +45,14 @@ start. Don't block on it.
    will be created - and confirm before touching anything. Cloning a repo and creating a new GitHub
    repo aren't easily reversible.
 
-2. Clone the starter kit into a new folder and detach it from the shared repo:
+2. Clone the starter kit into a new folder and detach it from the shared repo. Use the
+   `josh/feat/adk-2.2` branch, not `main` - it carries the Figma V2.2-aligned design token and
+   component work the ADK POC depends on, and it is not merged into `main` yet. Switch this back
+   to `main` once that branch merges upstream; check with a maintainer if you're unsure whether it
+   has landed yet.
 
 ```bash
-git clone https://github.com/Umbrage-Studios/nestjs-react-starter.git <kebab-case-client-name>
+git clone --branch josh/feat/adk-2.2 https://github.com/Umbrage-Studios/nestjs-react-starter.git <kebab-case-client-name>
 cd <kebab-case-client-name>
 git remote remove origin
 ```
@@ -212,6 +216,9 @@ git push -u origin main
 ## If it fails
 
 - **`git clone` permission denied** - confirm GitHub access to `Umbrage-Studios/nestjs-react-starter`.
+- **`git clone --branch josh/feat/adk-2.2` fails with "Remote branch not found"** - that branch has
+  likely been merged into `main` since this was written. Confirm with a maintainer, then drop
+  `--branch josh/feat/adk-2.2` and clone `main` instead - update this file once confirmed.
 - **`yarn nx serve` fails to boot** - check the `clientTheme.ts` hex values are valid 6-digit hex;
   a malformed hex breaks `darken()`'s parsing.
 - **`gh repo create` fails** - confirm `gh auth status` is logged in and the destination org/user
