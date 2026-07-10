@@ -512,7 +512,8 @@ const quickFill = (email: string) => {
 
 Prototypes publish to **Umbrage Pages**, not a third-party host, and via a **pull request**, not an
 instant upload. The `/publish-pages` command builds the static bundle and opens a PR adding it as a
-new project folder at `pages.umbrage.com/<project-name>/`:
+new project folder, served at its own subdomain: `https://<project-name>.pages.umbrage.com/` (the
+older `pages.umbrage.com/<project-name>/` path form still redirects there, but isn't canonical):
 
 ```
 /publish-pages
@@ -528,8 +529,8 @@ confirmed that tool is for one-off static content (reports, recaps), not full Re
 production build's bundle is too large to pass through it anyway, git is both the sanctioned and the
 only workable path here.
 
-**What makes a build publishable.** The app is served at a sub-path with no server-side rewrites, so
-the build needs:
+**What makes a build publishable.** There are no server-side rewrites for arbitrary client-side
+routes, so the build needs:
 
 - **Relative base** - `base: './'` in the Vite config, so asset URLs resolve at the sub-path.
 - **HashRouter, not BrowserRouter** - client-side routing via `#/path`, so refreshes and deep links
