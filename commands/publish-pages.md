@@ -38,14 +38,32 @@ quick, disposable color/style gut-check; delete the preview afterward (`delete_p
 
 ## Structure the Umbrage Pages repo expects
 
-- A new folder per project: `projects/<project-name>/` (kebab-case).
+**Repo:** [`Umbrage-Studios/umbrage-client-pages`](https://github.com/Umbrage-Studios/umbrage-client-pages)
+(confirmed 2026-07-10, this account now has org access - if you hit a 404 or permission error, the
+invite may not be accepted yet on the account in use, not a wrong repo name).
+
+- A new folder per project: `projects/<project-name>/` (kebab-case). The name must match
+  `^[a-z0-9][a-z0-9-]*$` - lowercase letters, digits, hyphens, and it can't start with `_` (that
+  prefix is reserved for the platform's shared/preview assets).
 - The build's `index.html` must land at the **root of that folder**, not nested under a `dist/`
-  subfolder. This is how `pages.umbrage.com/<project-name>/` gets served.
+  subfolder.
+- **The URL is a subdomain, not a sub-path:** `https://<project-name>.pages.umbrage.com/`. The
+  older `https://pages.umbrage.com/<project-name>/` form still resolves but 302-redirects to the
+  subdomain - treat the subdomain as canonical, don't tell a client the path-style URL is the real
+  one.
+- **Access is automatic, nothing to configure in git.** Every page is private by default behind a
+  shared team password, entirely portal-managed (DynamoDB + CloudFront KV store, no
+  `config/passwords.json` in the repo). A reviewer can give a project its own password in the
+  portal after it's live; making a page public needs executive approval there. Don't try to wire up
+  password handling as part of this command, there's nothing to do here.
+- **Authoring constraints:** use relative links only (`./page.html`, `./img/logo.png`), never
+  root-absolute, except the reserved `/_shared/...` prefix for the platform's shared logo assets.
+  The CSP is content-friendly (inline `<script>`/`<style>`, `eval`, `https:` CDN scripts/styles,
+  web fonts, `data:`/`blob:` assets, and `<iframe>` embeds are all allowed), so a standard Vite
+  build's inline/hashed asset references work without special-casing.
 - A `CLAUDE.md` inside `projects/<project-name>/` describing the prototype, and restating that it
   builds to the root of this folder.
-- The repo's own root-level `CLAUDE.md` should already state this convention for every project. If
-  it doesn't, that's worth flagging to whoever maintains the repo, it is not something to patch into
-  their root docs uninvited.
+- The repo's own root-level `CLAUDE.md` already states this convention for every project.
 
 ## Steps
 
@@ -68,13 +86,17 @@ quick, disposable color/style gut-check; delete the preview afterward (`delete_p
 3. **Clone or update a local working copy of the Umbrage Pages repo.**
 
    ```bash
-   git clone <UMBRAGE_PAGES_REPO_URL> umbrage-pages
+   git clone https://github.com/Umbrage-Studios/umbrage-client-pages.git umbrage-pages
    cd umbrage-pages
    git checkout -b poc/<project-name>
    ```
 
-   `<UMBRAGE_PAGES_REPO_URL>` is a placeholder. Confirm the real repo and that you have push access
-   before running this; do not guess a repo name.
+   If this fails with a 404 or permission error, the account running this doesn't have
+   `Umbrage-Studios` org access yet (check for a pending invite at
+   `gh api user/memberships/orgs` and accept it - see `gh api -X PATCH user/memberships/orgs/Umbrage-Studios -f state=active`).
+   Confirm before accepting an org invite on someone's behalf; it's a bigger, harder-to-fully-reverse
+   action than it looks, since it can change what's visible across every repo in the org, not just
+   this one.
 
 4. **Create the project folder and copy the build output in**, so `index.html` ends up at
    `projects/<project-name>/index.html`:
@@ -106,6 +128,11 @@ quick, disposable color/style gut-check; delete the preview afterward (`delete_p
 
 ## Testing without Umbrage Pages access
 
+**As of 2026-07-10, real access to `Umbrage-Studios/umbrage-client-pages` is confirmed working**
+(via `Umbrage-Studios` org membership) - use the real repo directly per the Steps above. The sandbox
+path below is kept for anyone who doesn't have that access yet, or for testing changes to this
+command without touching the shared repo.
+
 If you don't have access to the real pages repo yet, don't wait idle, the whole mechanism can be
 validated against a personal sandbox repo instead:
 
@@ -127,8 +154,11 @@ about the flow changes.
 
 ## If it fails
 
-- **Clone or push denied** - access to the pages repo hasn't been granted yet. Don't try to work
-  around this; ask for access.
+- **Clone or push denied** - check `gh api user/memberships/orgs` for a pending `Umbrage-Studios`
+  invite first; accepting it (with the user's explicit go-ahead, see Step 3) resolves most cases.
+  If there's no pending invite either, ask the Pages team for access rather than working around it.
+- **Project name rejected** - the folder name must match `^[a-z0-9][a-z0-9-]*$` and can't start
+  with `_` (reserved for platform assets). Rename the folder, don't try to escape the pattern.
 - **`index.html` missing at the project folder root after copying** - check step 2 copied the right
   build subfolder. For nestjs-react-starter it's `dist/apps/frontend-react/`'s contents, not the
   outer `dist/`.
