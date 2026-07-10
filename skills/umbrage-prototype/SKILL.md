@@ -64,11 +64,25 @@ Every prototype is for a specific client. Before writing any code or touching th
 
 **How branding flows through the system:**
 
-1. **`clientTheme` (default, works today)** - `/new-prototype` generates
-   `apps/frontend-react/src/app/theme/clientTheme.ts` from a single primary brand color (it derives
-   `primaryDark` automatically). Components read from it directly or via the `--client-primary` /
-   `--client-primary-dark` CSS variables it sets. This has no dependency on Figma automation or a
-   paid plan, so it's the default path for prototypes - not a fallback.
+1. **Figma-first (source of truth).** The designer duplicates the V2.2 Starter Kit and updates
+   Variables in that client-specific file to match the brand. Once an engagement has Design Token
+   Sync set up (see `references/figma-sync.md`), those Variables flow automatically into
+   `libs/util/tailwind-preset/tailwind.config.js` via a nightly GitHub Action, and every component
+   picks up the client's brand with no code changes. This is the system's intended end state -
+   Figma Variables are the single source of truth for client brand tokens, not `clientTheme`.
+
+   **Prerequisite:** a paid Figma plan (Variables REST API is Professional+), and - as of writing -
+   someone has to build `sync-tokens.mjs` for this engagement, since it doesn't exist in a stock
+   clone yet (see the Status note in `figma-sync.md`). Treat this as real setup work, not a toggle.
+
+2. **`clientTheme` (fast-start fallback, works today with zero Figma dependency).** Until Design
+   Token Sync is actually running for an engagement - which, as of writing, is true for every new
+   engagement, since `sync-tokens.mjs` hasn't been built yet - `/new-prototype` generates
+   `apps/frontend-react/src/app/theme/clientTheme.ts` from a single primary brand color instead (it
+   derives `primaryDark` automatically). Components read from it directly or via the
+   `--client-primary` / `--client-primary-dark` CSS variables it sets. Use this to start a prototype
+   immediately; move to Figma-first sync when the engagement is ready to invest in the setup - it
+   does not block starting.
 
    ```ts
    // apps/frontend-react/src/app/theme/clientTheme.ts
@@ -82,16 +96,11 @@ Every prototype is for a specific client. Before writing any code or touching th
    };
    ```
 
-2. **Full Figma Variable sync (optional upgrade)** - if an engagement sets up Design Token Sync
-   (see `references/figma-sync.md` - this requires a paid Figma plan and, as of writing, building
-   `sync-tokens.mjs` since it doesn't exist yet), the designer duplicates the V2.2 Starter Kit,
-   updates Variables there, and they flow into `tailwind.config.js` automatically. Treat this as an
-   upgrade path, not a prerequisite for starting a prototype.
-3. **Never hardcode client hex values in components.** Always read from `clientTheme` (or synced
-   tokens once set up) and let them flow through. If a component uses a literal hex like
-   `text-[#069BD7]`, that's a bug - replace it with the appropriate token.
+3. **Never hardcode client hex values in components.** Always read from synced Figma tokens (once
+   set up) or `clientTheme` (before that) and let them flow through. If a component uses a literal
+   hex like `text-[#069BD7]`, that's a bug - replace it with the appropriate token.
 
-**Figma kit for the client:** The V2.2 Starter Kit should be duplicated (not forked from the original) for each engagement if/when you set up full Figma sync. The duplicate is the client-specific source of truth. After duplication, the designer updates Variables in the new file - no changes go back to the shared V2.2 kit.
+**Figma kit for the client:** The V2.2 Starter Kit should be duplicated (not forked from the original) for every engagement, whether or not Design Token Sync is set up yet - it's needed for Dev Mode inspection and eventual Code Connect regardless. The duplicate is the client-specific source of truth. After duplication, the designer updates Variables in the new file - no changes go back to the shared V2.2 kit.
 
 ---
 
@@ -193,7 +202,9 @@ There's a separate `publish_preview` MCP tool that publishes instantly to a hash
 confirmed it's meant for one-off static content (reports, recaps), not full React apps, and a real
 build is too large to pass through that tool anyway (the model can't read or emit a production
 bundle's minified JS as a tool-call argument). Git has no such limit, which is the other reason this
-is the right path, not just the sanctioned one.
+is the right path, not just the sanctioned one. It has one narrow legitimate use - a quick,
+disposable static check of client brand colors on a few hand-authored components before building the
+real screens - see the confirmed limits and caveats in `commands/publish-pages.md`.
 
 A publishable build still needs relative base (`base: './'`) and `HashRouter` (not `BrowserRouter`),
 since it's served at a sub-path with no server-side rewrites. It does NOT need binary assets
