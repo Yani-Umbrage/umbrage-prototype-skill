@@ -193,9 +193,12 @@ Each engagement uses a **client-specific duplicate** of this file with the clien
 ## Publishing to Umbrage Pages
 
 Prototypes are shared via **Umbrage Pages**, not Vercel, and via **git, not the preview MCP tool**.
-Use `/publish-pages`: it builds the prototype and opens a PR adding it as a new project folder at
-`pages.umbrage.com/<project-name>/`. It goes through the repo's normal review process, so the command
-hands back a **PR link**, not an instant live URL.
+Use `/publish-pages`: it builds the prototype and opens a PR adding it as a new project folder,
+served at **`https://<project-name>.pages.umbrage.com/`** (a subdomain per project - the older
+`pages.umbrage.com/<project-name>/` path form still redirects there but isn't the canonical URL). It
+goes through the repo's normal review process, so the command hands back a **PR link**, not an
+instant live URL. Every page is private by default behind a portal-managed shared password -
+there's nothing to configure for access in this command.
 
 There's a separate `publish_preview` MCP tool that publishes instantly to a hashed
 `preview.pages.umbrage.com/p/<hash>/` link. Don't use it for prototypes: Umbrage Pages leadership
@@ -207,15 +210,18 @@ disposable static check of client brand colors on a few hand-authored components
 real screens - see the confirmed limits and caveats in `commands/publish-pages.md`.
 
 A publishable build still needs relative base (`base: './'`) and `HashRouter` (not `BrowserRouter`),
-since it's served at a sub-path with no server-side rewrites. It does NOT need binary assets
+since there are no server-side rewrites for arbitrary client-side routes (a path with no trailing
+slash and no extension won't resolve to a folder's `index.html`). It does NOT need binary assets
 avoided or inlined, git handles fonts and images as normal files. Prototypes scaffolded by
 `/new-prototype` are already set up this way.
 
-The Umbrage Pages repo expects a specific structure: a `projects/<project-name>/` folder with the
-build's `index.html` at its root (not nested under `dist/`), plus a `CLAUDE.md` inside that folder
-describing the prototype. See `commands/publish-pages.md` for the full mechanics. The actual repo
-name and write access are still being confirmed with the Pages team; treat that as a placeholder
-until it's filled in.
+The Umbrage Pages repo is
+[`Umbrage-Studios/umbrage-client-pages`](https://github.com/Umbrage-Studios/umbrage-client-pages)
+(confirmed access 2026-07-10). It expects a specific structure: a `projects/<project-name>/` folder
+(name matching `^[a-z0-9][a-z0-9-]*$`) with the build's `index.html` at its root (not nested under
+`dist/`), plus a `CLAUDE.md` inside that folder describing the prototype. Relative links only
+(except the reserved `/_shared/...` prefix for platform assets). See `commands/publish-pages.md` for
+the full mechanics.
 
 ---
 
