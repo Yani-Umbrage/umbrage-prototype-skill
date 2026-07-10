@@ -121,11 +121,14 @@ These patterns trip people up. Apply them automatically, don't wait to be asked:
 
 - **Never hardcode colors, spacing, or typography.** Use design tokens or the `typography-font-*` Tailwind classes.
 - **BadgeColor has no `Error` value.** Valid options: `Information | Success | Warning | Alert | Neutral`
-- **Badge `size` is the `BadgeSize` enum (`Regular | Small`) as of 2026-07-10, confirmed live on
-  every branch of `nestjs-react-starter`.** A validated-but-not-yet-merged v2.2 change renames this
-  to flat `'sm' | 'md'` strings and reconciles color tokens - get the branch/PR reference and check
-  whether it's merged before trusting this line; if it has, update this bullet, the component table
-  row below, and `templates/badge.figma.tsx`'s size mapping together.
+- **Badge `size` is `BadgeSize.Medium | BadgeSize.Small`** (values `'md'`/`'sm'`, matching the V2.2
+  Figma kit's variant labels). As of 2026-07-10 this is confirmed live on
+  `josh/feat/adk-2.2` (verified directly at commit `4773002`; PR #229 to merge it into `main` is
+  open but not yet merged) - `main` itself still has the old `Regular | Small` (`'regular'`/`'small'`)
+  names until that PR merges. `/new-prototype` already clones `josh/feat/adk-2.2`, so this is
+  correct for anything scaffolded through this skill today. If you're working against a clone of
+  plain `main` instead, check which enum names it actually exports before using this. It's still an
+  enum, not a flat string type - `size={BadgeSize.Medium}`, not `size="md"`.
 - **Select always needs a `placeholder` prop.**
 - **Sidebar needs a `profilePicture` prop** - pass `""` if not used.
 - **Breadcrumbs with 2 items need `breadcrumbSize={BreadcrumbSize.Two}`** to avoid duplicate rendering.
@@ -149,7 +152,7 @@ The user might be a developer who wants to move fast, or a designer/intern touch
 | Component | Import | Key gotchas |
 |---|---|---|
 | Button | `Button, ButtonColor, ButtonSize, ButtonType` | `buttonType`, `buttonColor`, `buttonSize` are all required |
-| Badge | `Badge, BadgeColor, BadgeSize` | No `Error` color; `size` pinned to pre-v2.2 enum, see note above |
+| Badge | `Badge, BadgeColor, BadgeSize` | No `Error` color; `size` is `BadgeSize.Medium`/`BadgeSize.Small` (`josh/feat/adk-2.2`, see note above; still `Regular` on plain `main` until PR #229 merges) |
 | InputField | `InputField` | `label`, `placeholder`, `value`, `onChange` |
 | Select | `Select, SelectOption` | `placeholder` required; `isMultiSelect` required |
 | Sidebar | `Sidebar, SidebarSection, SidebarItem` | `profilePicture` required |

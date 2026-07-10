@@ -7,25 +7,23 @@
 //
 // STATUS: props match the real component (color, icon, iconPosition, text - see
 // libs/ui-components/src/lib/badge/badge.tsx). The `size` mapping's Figma-side keys ('sm', 'md')
-// are confirmed against the actual V2.2 Figma starter kit's variant labels (2026-07-10) - the
-// Figma component uses 'sm'/'md', not the code enum's 'Regular'/'Small' names, which is why this
-// mapping exists. The sm->Small / md->Regular direction is the size-ordering assumption (sm is the
-// smaller variant); confirm this against the real file during discovery if it doesn't hold.
-// REPLACE_NODE_ID has never been resolved against a real Figma file and
+// are confirmed against the actual V2.2 Figma starter kit's variant labels (2026-07-10, verified
+// directly via the Figma MCP - every Badge variant instance in the file is literally named
+// "Size=sm" / "Size=md"). REPLACE_NODE_ID has never been resolved against a real Figma file and
 // `npx @figma/code-connect publish` has never been run for it. Run the discovery command in
 // figma-sync.md against your client's duplicated V2.2 file to get the real node ID before
 // publishing.
 //
-// PINNED TO PRE-v2.2 CODE (as of 2026-07-10, confirmed live on every branch of
-// Umbrage-Studios/nestjs-react-starter): badge.tsx's `size` prop is still the `BadgeSize` enum
-// ('Regular' | 'Small'), which is why this mapping's right-hand values are BadgeSize.Regular /
-// BadgeSize.Small. A validated-but-not-yet-merged v2.2 change renames this axis at the CODE level
-// too (and reconciles color tokens) - ask for the branch/PR reference and link it here once known.
-// When that lands: badge.tsx's `size` prop type changes from the BadgeSize enum to flat
-// 'sm' | 'md' strings, so this mapping's right-hand side becomes a straight passthrough
-// (sm: 'sm', md: 'md') instead of sm: BadgeSize.Small / md: BadgeSize.Regular, and the BadgeSize
-// import above can be dropped. Also update SKILL.md's Badge row and component-rules bullet at the
-// same time - they document the enum for developers writing React code, not just this mapping.
+// UPDATE (2026-07-10): the code-side rename landed. `badge.tsx` on
+// Umbrage-Studios/nestjs-react-starter's `josh/feat/adk-2.2` branch (verified directly at commit
+// 4773002, PR #229 "feat: ADK 2.2 merge to main", open, not yet merged to main as of this writing)
+// now defines `BadgeSize { Medium = 'md', Small = 'sm' }` - the old `Regular` member was renamed to
+// `Medium` and both members' underlying values changed to match Figma. It's still an enum, not a
+// flat string type - `size={BadgeSize.Medium}` / `size={BadgeSize.Small}` in code, same as before,
+// just the member name and value changed. The color token class names in badge.tsx were NOT
+// changed by this PR (still the older `infomation`/`default`/`error`/`secondary` keys) - the
+// "reconciled color tokens" claim only applies to the values matching Figma (confirmed earlier),
+// not to the class-name keys badge.tsx actually references.
 //
 // Use this file as the reference structure for mapping any other component - figma-sync.md points
 // here from its "Adding a new component" section.
@@ -36,12 +34,11 @@ import { Badge, BadgeColor, BadgeSize, BadgeIconPosition } from './badge';
 figma.connect(Badge, 'REPLACE_NODE_ID', {
   props: {
     text: figma.string('Text'),
-    // Figma's variant labels are 'sm'/'md', not the code enum's 'Regular'/'Small' - confirmed
-    // against the real V2.2 Figma starter kit (2026-07-10). The BadgeSize enum values on the
-    // right are unchanged; only the Figma-side keys on the left differ from the code names.
+    // Figma's variant labels are 'sm'/'md', matching the code enum's values one-to-one now that
+    // BadgeSize.Regular was renamed to BadgeSize.Medium (2026-07-10, see STATUS above).
     size: figma.enum('Size', {
       sm: BadgeSize.Small,
-      md: BadgeSize.Regular,
+      md: BadgeSize.Medium,
     }),
     // BadgeColor has no "Error" value - if the Figma component has an "Error" variant, map it to
     // BadgeColor.Alert, don't add a new enum value to match Figma. See SKILL.md's component rules.
