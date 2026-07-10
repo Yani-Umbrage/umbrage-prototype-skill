@@ -45,9 +45,11 @@ Publishes Code Connect mappings so Figma Dev Mode shows real React snippets for 
    account needed).
 3. If you also want Figma Code Connect and nightly token sync, add your Figma Personal Access
    Token to your repo's GitHub Secrets as `FIGMA_ACCESS_TOKEN` and follow the One-Time Setup in
-   `skills/umbrage-prototype/references/figma-sync.md` - these aren't built into
-   `nestjs-react-starter` yet, so the first engagement that wants them needs to set them up per
-   that file's spec.
+   `skills/umbrage-prototype/references/figma-sync.md`. Neither is built into `nestjs-react-starter`
+   by default; this skill ships starting-point templates at `skills/umbrage-prototype/templates/`
+   (`sync-tokens.mjs`, `badge.figma.tsx`) to copy in, but they're untested against a real Figma file
+   and the actual GitHub Actions workflows still need to be written - see the Status note at the top
+   of `figma-sync.md`.
 
 ## Figma file
 
