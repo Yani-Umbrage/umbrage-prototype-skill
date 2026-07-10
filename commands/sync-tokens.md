@@ -1,7 +1,7 @@
 ---
 name: sync-tokens
 description: Sync design tokens from Figma Variables to tailwind.config.js. Use when a designer has updated brand colors or tokens in Figma and the code needs to reflect those changes immediately, without waiting for the nightly GitHub Action.
-tools:
+allowed-tools:
   - Bash
   - Read
 ---
