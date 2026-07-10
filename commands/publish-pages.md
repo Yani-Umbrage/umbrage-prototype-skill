@@ -1,7 +1,7 @@
 ---
 name: publish-pages
 description: Build the prototype into a static bundle and open a PR adding it as a new project on Umbrage Pages. Use when someone wants to ship a prototype for real review and sharing, not just describe one. Publishes via the standard git/PR flow, not the preview MCP tool.
-tools:
+allowed-tools:
   - Bash
   - Read
   - Glob
@@ -25,6 +25,16 @@ the entire bundle sent as tool-call arguments, and a production React bundle's m
 line larger than what the model can even read in, let alone re-emit in a single call. Git has no such
 ceiling: copying files and committing them never requires the model to hold the file content as an
 argument. Use this command for real prototypes; don't reach for `publish_preview` here.
+
+**Confirmed against the live tool (2026-07-10):** `publish_preview` only accepts inline UTF-8 text
+file content (no image/font upload, no binary), and the resulting link is genuinely SSO-gated behind
+Entra ID, matching the claim above. A small, hand-authored static page (a few restyled primitives -
+badge colors, a button, a sidebar item - using inline CSS, no bundler output, no image or custom
+font files) publishes fine and can be a fast internal sanity-check of a client's brand colors before
+committing to a full screen build. It is not a substitute for `/publish-pages` on an actual
+prototype: no client-side routing persistence guarantees, no asset hosting, and it's a disconnected
+hashed link outside the versioned `pages.umbrage.com/<project-name>/` structure. Use it only for a
+quick, disposable color/style gut-check; delete the preview afterward (`delete_preview`).
 
 ## Structure the Umbrage Pages repo expects
 
