@@ -1,7 +1,7 @@
 ---
 name: publish-code-connect
 description: Publish Code Connect mappings to Figma so developers see real React snippets in Dev Mode. Use when a new component has been added to the repo, a component's props have changed, or Code Connect hasn't been set up yet and Dev Mode is showing generic CSS instead of React code.
-tools:
+allowed-tools:
   - Bash
   - Read
   - Glob
