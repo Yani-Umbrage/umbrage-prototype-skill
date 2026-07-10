@@ -69,15 +69,25 @@ Open the file and look at the left sidebar pages:
 | Radio | `RadioGroup` |
 | Avatar | `Avatar, AvatarSize` |
 
-### Figma ↔ Code sync is opt-in infrastructure
+### Figma ↔ Code sync is the source of truth, but it's opt-in setup work
 
-The repo supports two sync mechanisms (see [`figma-sync.md`](figma-sync.md)), but neither is set up by default - they're a one-time setup an engagement does when it needs them, not something that ships pre-configured:
+The repo supports two sync mechanisms (see [`figma-sync.md`](figma-sync.md)). **Design Token Sync
+is the intended source of truth for client branding** - Figma Variables in the client's duplicated
+file should be what every component's colors ultimately come from. Neither mechanism is set up by
+default, though - they're a one-time setup an engagement does, not something that ships
+pre-configured:
 
 1. **Code Connect** - once set up, real React code snippets appear in Figma Dev Mode when you click any component. Requires filling in `.figma.tsx` node IDs and running the initial publish (see `figma-sync.md`).
 
 2. **Design Token Sync** - once set up, a nightly GitHub Action reads Figma Variables and regenerates the color tokens in `libs/util/tailwind-preset/tailwind.config.js`. Requires a paid Figma plan (Variables REST API) and a `sync-tokens.mjs` script that the engagement builds per `figma-sync.md`'s spec.
 
-**For prototypes, don't wait on either sync.** Use `clientTheme` (Step 10) - it's the fast, working-today path for getting a client's brand color into the code, whether or not this engagement ever sets up full Figma sync. If `/new-prototype` was used to scaffold this project, `clientTheme` is already wired up.
+**For a prototype you need to start today, use `clientTheme` (Step 10) as the fallback** while
+Design Token Sync isn't running yet for this engagement - which, as of writing, is every engagement,
+since `sync-tokens.mjs` doesn't exist in a stock clone (see the Status note in `figma-sync.md`).
+`clientTheme` has no Figma dependency and gets a client's brand color into the code immediately. If
+`/new-prototype` was used to scaffold this project, `clientTheme` is already wired up. Move to
+Figma-first sync once the engagement sets it up - that doesn't require reworking anything from this
+fallback, just wiring the sync and letting it take over.
 
 ### Finding color and spacing values
 
@@ -97,9 +107,14 @@ All color tokens are in the Figma file under the **Variables** panel (right side
 
 The starter kit lives at `github.com/Umbrage-Studios/nestjs-react-starter`. **Do not push changes back to this repo** - it's the shared source of truth for all Umbrage projects.
 
+**Clone `josh/feat/adk-2.2`, not `main`.** That branch carries the Figma V2.2-aligned design token
+and component work the ADK POC depends on, and as of writing it is not yet merged into `main`.
+Switch this instruction back to `main` once that branch lands upstream - check with a maintainer if
+you're unsure whether it has.
+
 ```bash
-# Clone to a new folder with your project name
-git clone https://github.com/Umbrage-Studios/nestjs-react-starter.git your-project-name
+# Clone to a new folder with your project name, from the josh/feat/adk-2.2 branch
+git clone --branch josh/feat/adk-2.2 https://github.com/Umbrage-Studios/nestjs-react-starter.git your-project-name
 cd your-project-name
 
 # Remove the original remote so you don't accidentally push there
@@ -456,12 +471,12 @@ export default function DashboardPage() {
 | `typography-font-body-xs` | Small/secondary text |
 | `typography-font-label-sm` | Labels, tags |
 
-**Color tokens** - use your client's tokens, never these literals. The neutrals below are design-system defaults and are safe to reuse; the brand colors MUST come from `clientTheme` (`apps/frontend-react/src/app/theme/clientTheme.ts`, see `SKILL.md`), not hardcoded hex:
+**Color tokens** - use your client's tokens, never these literals. The neutrals below are design-system defaults and are safe to reuse; the brand colors MUST come from synced Figma tokens (source of truth, once Design Token Sync is set up - see `figma-sync.md`) or `clientTheme` (`apps/frontend-react/src/app/theme/clientTheme.ts`, the fallback while sync isn't running - see `SKILL.md`), never hardcoded hex:
 
 | Token | Source |
 |---|---|
-| Primary brand | `clientTheme.primary` / `var(--client-primary)` - client-specific, do NOT hardcode |
-| Dark / accent | `clientTheme.primaryDark` / `var(--client-primary-dark)` - client-specific |
+| Primary brand | Synced Figma token once set up, else `clientTheme.primary` / `var(--client-primary)` - client-specific, do NOT hardcode |
+| Dark / accent | Synced Figma token once set up, else `clientTheme.primaryDark` / `var(--client-primary-dark)` - client-specific |
 | Body text | `#25272C` - design-system default |
 | Secondary text | `#6B7280` - design-system default |
 | Background | `#F5F7FA` - design-system default |
