@@ -209,13 +209,22 @@ instant live URL. Every page is private by default behind a portal-managed share
 there's nothing to configure for access in this command.
 
 There's a separate `publish_preview` MCP tool that publishes instantly to a hashed
-`preview.pages.umbrage.com/p/<hash>/` link. Don't use it for prototypes: Umbrage Pages leadership
-confirmed it's meant for one-off static content (reports, recaps), not full React apps, and a real
-build is too large to pass through that tool anyway (the model can't read or emit a production
-bundle's minified JS as a tool-call argument). Git has no such limit, which is the other reason this
-is the right path, not just the sanctioned one. It has one narrow legitimate use - a quick,
-disposable static check of client brand colors on a few hand-authored components before building the
-real screens - see the confirmed limits and caveats in `commands/publish-pages.md`.
+`preview.pages.umbrage.com/p/<hash>/` link. Don't use it for a real prototype build: Umbrage Pages
+leadership confirmed it's meant for one-off static content (reports, recaps), not full React apps,
+and a real build is too large to pass through that tool anyway (the model can't read or emit a
+production bundle's minified JS as a tool-call argument, and the tool only takes inline UTF-8 text -
+no binary/image/font upload). Git has no such limit, which is the other reason this is the right path
+for a real screen build, not just the sanctioned one.
+
+That said, `publish_preview` is no longer purely disposable. As of 2026-07-10 the portal's
+**Previews** tab has a **Promote** action (confirmed merged to `main` and deployed in
+`Umbrage-Studios/umbrage-client-pages`) that turns a preview hash into a real page through the same
+reviewed PR `/publish-pages` opens by hand. For a **small, hand-authored page** (a few restyled
+primitives - badge colors, a button, a sidebar item - inline CSS, no bundler output, no binary
+assets), `publish_preview` -> Promote is a legitimate fast path that skips the manual clone/PR steps
+entirely. It's not a substitute for `/publish-pages` on an actual production build (same size/binary
+ceiling as above), but it's no longer just a gut-check to delete afterward - see the full walkthrough
+and constraints in `commands/publish-pages.md`.
 
 A publishable build still needs relative base (`base: './'`) and `HashRouter` (not `BrowserRouter`),
 since there are no server-side rewrites for arbitrary client-side routes (a path with no trailing

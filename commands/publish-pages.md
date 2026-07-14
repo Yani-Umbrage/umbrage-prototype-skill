@@ -31,10 +31,37 @@ file content (no image/font upload, no binary), and the resulting link is genuin
 Entra ID, matching the claim above. A small, hand-authored static page (a few restyled primitives -
 badge colors, a button, a sidebar item - using inline CSS, no bundler output, no image or custom
 font files) publishes fine and can be a fast internal sanity-check of a client's brand colors before
-committing to a full screen build. It is not a substitute for `/publish-pages` on an actual
-prototype: no client-side routing persistence guarantees, no asset hosting, and it's a disconnected
-hashed link outside the versioned `pages.umbrage.com/<project-name>/` structure. Use it only for a
-quick, disposable color/style gut-check; delete the preview afterward (`delete_preview`).
+committing to a full screen build. It's a disconnected hashed link outside the versioned
+`pages.umbrage.com/<project-name>/` structure, with no client-side routing persistence guarantees and
+no asset hosting - so it's still not a substitute for a real screen build. But it no longer has to be
+throwaway: if the page is worth keeping, **Promote it** (see below) instead of deleting it. Only
+delete (`delete_preview`) if it was genuinely a disposable gut-check.
+
+### Fast path for small prototypes: `publish_preview` -> Promote
+
+As of 2026-07-10, the portal's **Previews** tab at `pages.umbrage.com` has a **Promote** action that
+turns a `publish_preview` hash into a real, reviewed page - confirmed merged to `main` and deployed
+(`Umbrage-Studios/umbrage-client-pages` PRs #69, #73, #76; every subsequent merge to `main`,
+including today's, deploys clean). Promote isn't a review bypass: it opens the *same* credited PR
+through `submitProject` that the manual steps below produce, either as a **new**
+`<name>.pages.umbrage.com` project or by **overwriting** an existing one. Any signed-in user can
+promote a hash they hold; the PR still needs the normal review/approval.
+
+Use this instead of cloning the repo and opening a PR by hand when **both** are true:
+
+- the prototype is small enough to fit `publish_preview`'s inline-UTF-8-text constraint - no images,
+  fonts, or other binary assets, and small enough for the model to hold the whole file content as a
+  tool-call argument. This means a genuinely small hand-authored page, not a real Vite/nx production
+  bundle.
+- the person publishing has portal sign-in (Promote is portal-side, not an MCP tool).
+
+Steps: `publish_preview` the file(s) -> open **Previews** at `pages.umbrage.com` -> **Promote** ->
+choose **New page** (kebab-case project name, must be free) or **Overwrite existing** (must already
+be a published page) -> this opens the same reviewed PR `/publish-pages` would. Return that PR link
+the same way Step 7 below does.
+
+For anything with binary assets or a real production bundle, `publish_preview` can't carry the files
+at all (SSO-gated inline-text tool, not a file upload) - use the git/PR flow below instead.
 
 ## Structure the Umbrage Pages repo expects
 
